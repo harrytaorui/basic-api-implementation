@@ -64,6 +64,7 @@ class RsListApplicationTests {
 
     }
 
+
     @Test
     void should_modify_Rs_Event_No_Keyword() throws Exception {
         mockMvc.perform(put("/rs/event?id=1&name=汪峰上热搜了")).
@@ -83,4 +84,15 @@ class RsListApplicationTests {
                 andExpect(jsonPath("$.eventName",is("第一条事件"))).
                 andExpect(jsonPath("$.keyWord",is("2")));
     }
+
+    @Test
+    void should_modify_Rs_Event_With_Both_Param() throws Exception {
+        mockMvc.perform(put("/rs/event?id=1&name=汪峰上热搜了&keyword=2")).
+                andExpect(status().isOk());
+        mockMvc.perform(get("/rs/1")).
+                andExpect(status().isOk()).
+                andExpect(jsonPath("$.eventName",is("汪峰上热搜了"))).
+                andExpect(jsonPath("$.keyWord",is("2")));
+    }
+
 }
