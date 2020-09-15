@@ -12,8 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -57,7 +56,7 @@ class RsListApplicationTests {
                 andExpect(status().isOk());
         mockMvc.perform(get("/rs/list")).
                 andExpect(status().isOk()).
-                andExpect(jsonPath("$",hasSize(4))).
+                andExpect(jsonPath("$", hasSize(4))).
                 andExpect(jsonPath("$[0].eventName", is("第一条事件"))).
                 andExpect(jsonPath("$[1].eventName", is("第二条事件"))).
                 andExpect(jsonPath("$[2].eventName", is("第三条事件"))).
@@ -65,4 +64,23 @@ class RsListApplicationTests {
 
     }
 
+    @Test
+    void should_modify_Rs_Event_No_Keyword() throws Exception {
+        mockMvc.perform(put("/rs/event?id=1&name=汪峰上热搜了")).
+                andExpect(status().isOk());
+        mockMvc.perform(get("/rs/1")).
+                andExpect(status().isOk()).
+                andExpect(jsonPath("$.eventName",is("汪峰上热搜了"))).
+                andExpect(jsonPath("$.keyWord",is("1")));
+    }
+
+    @Test
+    void should_modify_Rs_Event_No_Name() throws Exception {
+        mockMvc.perform(put("/rs/event?id=1&keyword=2")).
+                andExpect(status().isOk());
+        mockMvc.perform(get("/rs/1")).
+                andExpect(status().isOk()).
+                andExpect(jsonPath("$.eventName",is("第一条事件"))).
+                andExpect(jsonPath("$.keyWord",is("2")));
+    }
 }
