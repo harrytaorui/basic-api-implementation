@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,10 +49,12 @@ public class RsController {
   }
 
   @PutMapping("/rs/event")
-  public void modifyEvent(@RequestParam int id,
-                          @RequestParam(required = false) String name,
-                          @RequestParam(required = false) String keyword) {
-    int index = id - 1;
+  public void modifyEvent(@RequestBody String json) throws JsonProcessingException {
+    ObjectMapper objectMapper = new ObjectMapper();
+    Map<String,String> map = objectMapper.readValue(json,Map.class);
+    int index = Integer.parseInt(map.get("id")) - 1;
+    String name = map.get("name");
+    String keyword = map.get("keyword");
     if (isInList(index)) {
       RsEvent rsEvent = rsList.get(index);
       if (name != null) {

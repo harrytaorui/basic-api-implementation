@@ -10,6 +10,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -77,7 +80,13 @@ class RsListApplicationTests {
 
     @Test
     void should_modify_Rs_Event_No_Keyword() throws Exception {
-        mockMvc.perform(put("/rs/event?id=1&name=汪峰上热搜了")).
+        Map<String,String> map = new HashMap<>();
+        map.put("id","1");
+        map.put("name","汪峰上热搜了");
+        map.put("keyword",null);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = objectMapper.writeValueAsString(map);
+        mockMvc.perform(put("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
                 andExpect(status().isOk());
         mockMvc.perform(get("/rs/1")).
                 andExpect(status().isOk()).
@@ -87,7 +96,13 @@ class RsListApplicationTests {
 
     @Test
     void should_modify_Rs_Event_No_Name() throws Exception {
-        mockMvc.perform(put("/rs/event?id=1&keyword=2")).
+        Map<String,String> map = new HashMap<>();
+        map.put("id","1");
+        map.put("name",null);
+        map.put("keyword","2");
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = objectMapper.writeValueAsString(map);
+        mockMvc.perform(put("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
                 andExpect(status().isOk());
         mockMvc.perform(get("/rs/1")).
                 andExpect(status().isOk()).
@@ -97,7 +112,13 @@ class RsListApplicationTests {
 
     @Test
     void should_modify_Rs_Event_With_Both_Param() throws Exception {
-        mockMvc.perform(put("/rs/event?id=1&name=汪峰上热搜了&keyword=2")).
+        Map<String,String> map = new HashMap<>();
+        map.put("id","1");
+        map.put("name","汪峰上热搜了");
+        map.put("keyword","2");
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = objectMapper.writeValueAsString(map);
+        mockMvc.perform(put("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
                 andExpect(status().isOk());
         mockMvc.perform(get("/rs/1")).
                 andExpect(status().isOk()).
