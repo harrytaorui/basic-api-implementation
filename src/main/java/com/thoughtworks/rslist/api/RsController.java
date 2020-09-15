@@ -48,11 +48,11 @@ public class RsController {
   }
 
   @PutMapping("/rs/event")
-  public void modifyEvent(@RequestParam Integer id,
+  public void modifyEvent(@RequestParam int id,
                           @RequestParam(required = false) String name,
                           @RequestParam(required = false) String keyword) {
     int index = id - 1;
-    if (index >= 0 && id < rsList.size() - 1) {
+    if (isInList(index)) {
       RsEvent rsEvent = rsList.get(index);
       if (name != null) {
         rsEvent.setEventName(name);
@@ -60,6 +60,18 @@ public class RsController {
       if (keyword != null){
         rsEvent.setKeyWord(keyword);
       }
+    }
+  }
+
+  private boolean isInList(int index) {
+    return index >= 0 && index < rsList.size();
+  }
+
+  @DeleteMapping("/rs/event")
+  public void deleteEvent(@RequestParam int id) {
+    int index = id - 1;
+    if (isInList(index)) {
+      rsList.remove(index);
     }
   }
 }

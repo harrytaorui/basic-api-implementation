@@ -27,13 +27,16 @@ class RsListApplicationTests {
     void should_get_one_rs_event() throws Exception {
         mockMvc.perform(get("/rs/1")).
                 andExpect(status().isOk()).
-                andExpect(jsonPath("$.eventName", is("第一条事件")));
+                andExpect(jsonPath("$.eventName", is("第一条事件"))).
+                andExpect(jsonPath("$.keyWord", is("1")));
         mockMvc.perform(get("/rs/2")).
                 andExpect(status().isOk()).
-                andExpect(jsonPath("$.eventName", is("第二条事件")));
+                andExpect(jsonPath("$.eventName", is("第二条事件"))).
+                andExpect(jsonPath("$.keyWord", is("2")));
         mockMvc.perform(get("/rs/3")).
                 andExpect(status().isOk()).
-                andExpect(jsonPath("$.eventName", is("第三条事件")));
+                andExpect(jsonPath("$.eventName", is("第三条事件"))).
+                andExpect(jsonPath("$.keyWord", is("3")));
     }
 
     @Test
@@ -42,14 +45,17 @@ class RsListApplicationTests {
                 andExpect(status().isOk()).
                 andExpect(jsonPath("$",hasSize(3))).
                 andExpect(jsonPath("$[0].eventName", is("第一条事件"))).
+                andExpect(jsonPath("$[0].keyWord", is("1"))).
                 andExpect(jsonPath("$[1].eventName", is("第二条事件"))).
-                andExpect(jsonPath("$[2].eventName", is("第三条事件")));
+                andExpect(jsonPath("$[1].keyWord", is("2"))).
+                andExpect(jsonPath("$[2].eventName", is("第三条事件"))).
+                andExpect(jsonPath("$[2].keyWord", is("3")));
     }
 
     @Test
     void should_add_rs_event() throws Exception {
 
-        RsEvent rsEvent = new RsEvent("第四条事件","");
+        RsEvent rsEvent = new RsEvent("第四条事件","4");
         ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(rsEvent);
         mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
@@ -58,9 +64,13 @@ class RsListApplicationTests {
                 andExpect(status().isOk()).
                 andExpect(jsonPath("$", hasSize(4))).
                 andExpect(jsonPath("$[0].eventName", is("第一条事件"))).
+                andExpect(jsonPath("$[0].keyWord", is("1"))).
                 andExpect(jsonPath("$[1].eventName", is("第二条事件"))).
+                andExpect(jsonPath("$[1].keyWord", is("2"))).
                 andExpect(jsonPath("$[2].eventName", is("第三条事件"))).
-                andExpect(jsonPath("$[3].eventName", is("第四条事件")));
+                andExpect(jsonPath("$[2].keyWord", is("3"))).
+                andExpect(jsonPath("$[3].eventName", is("第四条事件"))).
+                andExpect(jsonPath("$[3].keyWord", is("4")));
 
     }
 
@@ -103,9 +113,9 @@ class RsListApplicationTests {
                 andExpect(status().isOk()).
                 andExpect(jsonPath("$",hasSize(2))).
                 andExpect(jsonPath("$[0].eventName", is("第二条事件"))).
-                andExpect(jsonPath("$[0].keyword", is("2"))).
+                andExpect(jsonPath("$[0].keyWord", is("2"))).
                 andExpect(jsonPath("$[1].eventName", is("第三条事件"))).
-                andExpect(jsonPath("$[1].keyword", is("3")));
+                andExpect(jsonPath("$[1].keyWord", is("3")));
     }
 
 }
