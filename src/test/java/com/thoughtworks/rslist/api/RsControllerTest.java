@@ -145,7 +145,7 @@ public class RsControllerTest {
 
 	@Test
 	void should_modify_Rs_Event_No_Name() throws Exception {
-		RsEvent rsEvent = new RsEvent("汪峰上热搜了", null, createUser());
+		RsEvent rsEvent = new RsEvent(null, "2", createUser());
 		String json = getJsonString(rsEvent);
 		mockMvc.perform(put("/rs/event/1").content(json).contentType(MediaType.APPLICATION_JSON)).
 				andExpect(status().isOk());
@@ -164,7 +164,7 @@ public class RsControllerTest {
 		mockMvc.perform(get("/rs/1")).
 				andExpect(status().isOk()).
 				andExpect(jsonPath("$.eventName", is("汪峰上热搜了"))).
-				andExpect(jsonPath("$.keyword", is("2")));
+				andExpect(jsonPath("$.keyword", is("1")));
 	}
 
 	@Test
