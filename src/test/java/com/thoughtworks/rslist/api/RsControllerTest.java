@@ -88,12 +88,19 @@ public class RsControllerTest {
 
 	@Test
 	void add_event_EventName_can_not_be_null() throws Exception {
-		RsEvent rsEvent = new RsEvent("第四条事件", null, createUser());
+		RsEvent rsEvent = new RsEvent(null, "1", createUser());
 		String json = getJsonString(rsEvent);
 		mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
 				andExpect(status().isBadRequest());
 	}
 
+	@Test
+	void add_event_keyword_can_not_be_null() throws Exception {
+		RsEvent rsEvent = new RsEvent("第四条事件", null, createUser());
+		String json = getJsonString(rsEvent);
+		mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
+				andExpect(status().isBadRequest());
+	}
 
 	@Test
 	void should_modify_Rs_Event_No_Keyword() throws Exception {
@@ -144,11 +151,6 @@ public class RsControllerTest {
 				.andExpect(jsonPath("$[1].eventName", is("第三条事件")))
 				.andExpect(jsonPath("$[1].keyword", is("3")));
 	}
-
-
-
-
-
 
 	private String getJsonString(RsEvent rsEvent) throws JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();
