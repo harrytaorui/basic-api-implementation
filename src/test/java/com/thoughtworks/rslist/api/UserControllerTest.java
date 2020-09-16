@@ -12,6 +12,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -27,7 +28,7 @@ public class UserControllerTest {
 		String jsonString = getJsonString(new User("harry", 19, "male", "1234567@qq.com", "12211333333"));
 		mockMvc.perform(post("/user/register").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk());
+				.andExpect(status().isCreated());
 	}
 
 
@@ -109,6 +110,15 @@ public class UserControllerTest {
 		mockMvc.perform(post("/user/register").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void should_return_index_when_create_user() throws Exception {
+		String jsonString = getJsonString(new User("harry", 19, "male", "1234567@qq.com", "12211333333"));
+		mockMvc.perform(post("/user/register").content(jsonString)
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated())
+				.andExpect(header().string("index","0"));
 	}
 
 	private String getJsonString(User user) throws JsonProcessingException {
