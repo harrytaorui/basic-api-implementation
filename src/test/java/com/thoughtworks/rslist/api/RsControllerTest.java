@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.dto.RsEvent;
 import com.thoughtworks.rslist.dto.User;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,6 +28,9 @@ public class RsControllerTest {
 
 	@Autowired
 	MockMvc mockMvc;
+
+	@Autowired
+	UserService userService;
 
 	@Test
 	void should_get_one_rs_event() throws Exception {
@@ -100,6 +104,30 @@ public class RsControllerTest {
 		String json = getJsonString(rsEvent);
 		mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
 				andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void add_event_with_existed_User() throws Exception {
+		User defaultUser = new User("tao", 19, "male", "1234567@qq.com", "12211333333");
+		userService.addUser("tao",defaultUser);
+		RsEvent rsEvent = new RsEvent("第四条事件", "4", defaultUser);
+		String json = getJsonString(rsEvent);
+		mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
+				andExpect(status().isOk());
+		mockMvc.perform(get("/rs/4")).andExpect(jsonPath("$.user.userName",is("tao")));
+		Assertions.assertEquals(userService.getUserList().size(),1);
+	}
+
+	@Test
+	void add_event_with_New_User() throws Exception {
+		User defaultUser = new User("tao", 19, "male", "1234567@qq.com", "12211333333");
+		userService.addUser("tao",defaultUser);
+		RsEvent rsEvent = new RsEvent("第四条事件", "4", createUser());
+		String json = getJsonString(rsEvent);
+		mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
+				andExpect(status().isOk());
+		mockMvc.perform(get("/rs/4")).andExpect(jsonPath("$.user.userName",is("小王")));
+		Assertions.assertTrue(userService.getUserList().containsKey("小王"));
 	}
 
 	@Test

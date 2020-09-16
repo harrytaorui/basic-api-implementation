@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.dto.RsEvent;
 import com.thoughtworks.rslist.dto.User;
 import com.thoughtworks.rslist.exceptions.CommonError;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,14 +18,17 @@ import java.util.Map;
 @RestController
 public class RsController {
 
+  @Autowired
+  UserService userService;
+
   private List<RsEvent> rsList = initRsList();
 
   private List<RsEvent> initRsList() {
     List<RsEvent> tempList = new ArrayList<>();
     User defaultUser = new User("tao", 19, "male", "1234567@qq.com", "12211333333");
-    tempList.add(new RsEvent("第一条事件", "1",defaultUser));
-    tempList.add(new RsEvent("第二条事件", "2",defaultUser));
-    tempList.add(new RsEvent("第三条事件", "3",defaultUser));
+    tempList.add(new RsEvent("第一条事件", "1", defaultUser));
+    tempList.add(new RsEvent("第二条事件", "2", defaultUser));
+    tempList.add(new RsEvent("第三条事件", "3", defaultUser));
     return tempList;
   }
 
@@ -46,6 +50,10 @@ public class RsController {
 
   @PostMapping("/rs/event")
   public void addRsEvent(@Valid @RequestBody RsEvent rsEvent) throws JsonProcessingException {
+    User user = rsEvent.getUser();
+    if (userService.getUserList().get(user.getUserName()) == null) {
+      userService.addUser(user.getUserName(), rsEvent.getUser());
+    }
     rsList.add(rsEvent);
   }
 
