@@ -1,11 +1,20 @@
 package com.thoughtworks.rslist.api;
 
+import com.thoughtworks.rslist.exceptions.CommonError;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Arrays;
-import java.util.List;
 
 @RestController
 public class RsController {
-  private List<String> rsList = Arrays.asList("第一条事件", "第二条事件", "第三条事件");
+
+
+
+  @ExceptionHandler(IndexOutOfBoundsException.class)
+  private ResponseEntity<CommonError> handleIndexOutOfBoundsException(IndexOutOfBoundsException exception) {
+    CommonError commonError = new CommonError();
+    commonError.setError("invalid request param");
+    return ResponseEntity.badRequest().body(commonError);
+  }
 }
