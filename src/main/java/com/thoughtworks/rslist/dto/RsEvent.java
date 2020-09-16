@@ -21,7 +21,6 @@ public class RsEvent {
 	private String keyword;
 
 	@NotNull
-	@Valid
 	private User user;
 
 	@JsonIgnore
