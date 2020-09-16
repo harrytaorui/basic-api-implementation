@@ -8,6 +8,7 @@ import com.thoughtworks.rslist.exceptions.CommonError;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,9 +45,7 @@ public class RsController {
   }
 
   @PostMapping("/rs/event")
-  public void addRsEvent(@RequestBody String rsEventString) throws JsonProcessingException {
-    ObjectMapper objectMapper = new ObjectMapper();
-    RsEvent rsEvent = objectMapper.readValue(rsEventString, RsEvent.class);
+  public void addRsEvent(@Valid @RequestBody RsEvent rsEvent) throws JsonProcessingException {
     rsList.add(rsEvent);
   }
 

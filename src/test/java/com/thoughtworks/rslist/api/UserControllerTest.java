@@ -104,7 +104,7 @@ public class UserControllerTest {
 	}
 
 	@Test
-	void should_Fail_when_Phone_number_Starts_with_2() throws Exception {
+	void should_Fail_when_Phone_number_not_Starts_with_1() throws Exception {
 		String jsonString = getJsonString(new User("harry", 18, "male", "1234567@qq.com", "22211133333"));
 		mockMvc.perform(post("/user/register").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
