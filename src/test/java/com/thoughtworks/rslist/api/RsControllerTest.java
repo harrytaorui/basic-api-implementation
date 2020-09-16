@@ -2,6 +2,7 @@ package com.thoughtworks.rslist.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import com.thoughtworks.rslist.dto.RsEvent;
 import com.thoughtworks.rslist.dto.User;
 import org.junit.jupiter.api.Assertions;
@@ -14,8 +15,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -187,6 +187,13 @@ public class RsControllerTest {
 		mockMvc.perform(post("/rs/event").content(json)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated()).andExpect(header().string("index","3"));
+	}
+
+	@Test
+	void should_ignore_user_when_get_event() throws Exception {
+		mockMvc.perform(get("/rs/1")).andExpect(jsonPath("$",not(hasKey("user"))));
+		mockMvc.perform(get("/rs/list")).andExpect(jsonPath("$[0]",not(hasKey("user"))))
+		.andExpect(jsonPath("$[1]",not(hasKey("user"))));
 	}
 
 	private String getJsonString(RsEvent rsEvent) throws JsonProcessingException {
