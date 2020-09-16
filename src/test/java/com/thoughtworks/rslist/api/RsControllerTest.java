@@ -79,8 +79,16 @@ public class RsControllerTest {
 	}
 
 	@Test
-	void user_can_not_be_null() throws Exception {
+	void add_event_user_can_not_be_null() throws Exception {
 		RsEvent rsEvent = new RsEvent("第四条事件", "4",null);
+		String json = getJsonString(rsEvent);
+		mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
+				andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void add_event_EventName_can_not_be_null() throws Exception {
+		RsEvent rsEvent = new RsEvent("第四条事件", null, createUser());
 		String json = getJsonString(rsEvent);
 		mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
 				andExpect(status().isBadRequest());
