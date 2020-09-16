@@ -3,6 +3,7 @@ package com.thoughtworks.rslist.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.dto.RsEvent;
+import com.thoughtworks.rslist.dto.User;
 import com.thoughtworks.rslist.exceptions.CommonError;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,9 +20,10 @@ public class RsController {
 
   private List<RsEvent> initRsList() {
     List<RsEvent> tempList = new ArrayList<>();
-    tempList.add(new RsEvent("第一条事件", "1"));
-    tempList.add(new RsEvent("第二条事件", "2"));
-    tempList.add(new RsEvent("第三条事件", "3"));
+    User defaultUser = new User("tao", 19, "male", "1234567@qq.com", "12211333333");
+    tempList.add(new RsEvent("第一条事件", "1",defaultUser));
+    tempList.add(new RsEvent("第二条事件", "2",defaultUser));
+    tempList.add(new RsEvent("第三条事件", "3",defaultUser));
     return tempList;
   }
 
@@ -48,27 +50,22 @@ public class RsController {
     rsList.add(rsEvent);
   }
 
-  @PutMapping("/rs/event")
-  public void modifyEvent(@RequestBody String json) throws JsonProcessingException {
-    ObjectMapper objectMapper = new ObjectMapper();
-    Map<String,String> map = objectMapper.readValue(json,Map.class);
-    int index = Integer.parseInt(map.get("id")) - 1;
-    String name = map.get("name");
-    String keyword = map.get("keyword");
-    if (isInList(index)) {
-      RsEvent rsEvent = rsList.get(index);
-      if (name != null) {
-        rsEvent.setEventName(name);
-      }
-      if (keyword != null){
-        rsEvent.setKeyword(keyword);
-      }
+  @PutMapping("/rs/event/{id}")
+  public void modifyEvent(@PathVariable int id, @RequestBody RsEvent requestEvent) {
+
+    int index = id - 1;
+    if (!isInList(index)) {
+      throw new IndexOutOfBoundsException();
+    }
+    RsEvent rsEvent = rsList.get(index);
+    if (requestEvent.getEventName() != null) {
+      rsEvent.setEventName(requestEvent.getEventName());
+    }
+    if (requestEvent.getKeyword() != null){
+      rsEvent.setKeyword(requestEvent.getKeyword());
     }
   }
 
-  private boolean isInList(int index) {
-    return index >= 0 && index < rsList.size();
-  }
 
   @DeleteMapping("/rs/event")
   public void deleteEvent(@RequestParam int id) {
@@ -76,6 +73,10 @@ public class RsController {
     if (isInList(index)) {
       rsList.remove(index);
     }
+  }
+
+  private boolean isInList(int index) {
+    return index >= 0 && index < rsList.size();
   }
 
   @ExceptionHandler(IndexOutOfBoundsException.class)
