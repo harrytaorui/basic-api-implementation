@@ -11,9 +11,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -22,6 +24,9 @@ public class UserControllerTest {
 
 	@Autowired
 	MockMvc mockMvc;
+
+	@Autowired
+	UserService userService;
 
 	@Test
 	void should_Register_User() throws Exception {
@@ -119,6 +124,24 @@ public class UserControllerTest {
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated())
 				.andExpect(header().string("index","0"));
+	}
+
+
+	@Test
+	void should_return_all_users() throws Exception {
+		userService.addUser(new User("harry", 19, "male", "1234567@qq.com", "12211333333"));
+		userService.addUser(new User("wang", 22, "male", "311111@qq.com", "12211334567"));
+		mockMvc.perform(get("/users")).andExpect(jsonPath("$",hasSize(2)))
+				.andExpect(jsonPath("$[0].userName",is("harry")))
+				.andExpect(jsonPath("$[0].age",is(19)))
+				.andExpect(jsonPath("$[0].gender",is("male")))
+				.andExpect(jsonPath("$[0].email",is("1234567@qq.com")))
+				.andExpect(jsonPath("$[0].phone",is("12211333333")))
+				.andExpect(jsonPath("$[1].userName",is("wang")))
+				.andExpect(jsonPath("$[1].age",is(22)))
+				.andExpect(jsonPath("$[1].gender",is("male")))
+				.andExpect(jsonPath("$[1].email",is("311111@qq.com")))
+				.andExpect(jsonPath("$[1].phone",is("12211334567")));
 	}
 
 	private String getJsonString(User user) throws JsonProcessingException {
