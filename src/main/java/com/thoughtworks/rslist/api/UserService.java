@@ -4,19 +4,19 @@ package com.thoughtworks.rslist.api;
 import com.thoughtworks.rslist.dto.User;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class UserService {
 
-	private Map<String, User> userList = new HashMap<>();
+	private List<User> userList = new ArrayList<>();
 
-	public Map<String, User> getUserList() {
+	public List<User> getUserList() {
 		return userList;
 	}
 
-	public void addUser(String Username, User user) {
-		userList.put(Username, user);
+	public void addUser(User user) {
+		userList.add(user);
 	}
 }

@@ -18,8 +18,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -67,9 +66,9 @@ public class RsControllerTest {
 		RsEvent rsEvent = new RsEvent("第四条事件", "4",createUser());
 		String json = getJsonString(rsEvent);
 		mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
-				andExpect(status().isOk());
+				andExpect(status().isCreated());
 		mockMvc.perform(get("/rs/list")).
-				andExpect(status().isOk()).
+				andExpect(status().isCreated()).
 				andExpect(jsonPath("$", hasSize(4))).
 				andExpect(jsonPath("$[0].eventName", is("第一条事件"))).
 				andExpect(jsonPath("$[0].keyword", is("1"))).
@@ -109,11 +108,11 @@ public class RsControllerTest {
 	@Test
 	void add_event_with_existed_User() throws Exception {
 		User defaultUser = new User("tao", 19, "male", "1234567@qq.com", "12211333333");
-		userService.addUser("tao",defaultUser);
+		userService.addUser(defaultUser);
 		RsEvent rsEvent = new RsEvent("第四条事件", "4", defaultUser);
 		String json = getJsonString(rsEvent);
 		mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
-				andExpect(status().isOk());
+				andExpect(status().isCreated());
 		mockMvc.perform(get("/rs/4")).andExpect(jsonPath("$.user.userName",is("tao")));
 		Assertions.assertEquals(userService.getUserList().size(),1);
 	}
@@ -121,13 +120,14 @@ public class RsControllerTest {
 	@Test
 	void add_event_with_New_User() throws Exception {
 		User defaultUser = new User("tao", 19, "male", "1234567@qq.com", "12211333333");
-		userService.addUser("tao",defaultUser);
+		userService.addUser(defaultUser);
 		RsEvent rsEvent = new RsEvent("第四条事件", "4", createUser());
 		String json = getJsonString(rsEvent);
 		mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
-				andExpect(status().isOk());
+				andExpect(status().isCreated());
 		mockMvc.perform(get("/rs/4")).andExpect(jsonPath("$.user.userName",is("小王")));
-		Assertions.assertTrue(userService.getUserList().containsKey("小王"));
+		Assertions.assertTrue(userService.getUserList()
+				.stream().filter(e->e.getUserName().equals("小王")).count()==1);
 	}
 
 	@Test
@@ -178,6 +178,15 @@ public class RsControllerTest {
 				.andExpect(jsonPath("$[0].keyword", is("2")))
 				.andExpect(jsonPath("$[1].eventName", is("第三条事件")))
 				.andExpect(jsonPath("$[1].keyword", is("3")));
+	}
+
+	@Test
+	void should_return_index_when_add_event() throws Exception {
+		RsEvent rsEvent = new RsEvent("第四条事件", "4",createUser());
+		String json = getJsonString(rsEvent);
+		mockMvc.perform(post("/rs/event").content(json)
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated()).andExpect(header().string("index","3"));
 	}
 
 	private String getJsonString(RsEvent rsEvent) throws JsonProcessingException {

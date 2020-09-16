@@ -38,27 +38,35 @@ public class RsController {
   }
 
   @GetMapping("/rs/list")
-  public List<RsEvent> getRsEventByRange(
+  public ResponseEntity<List<RsEvent>> getRsEventByRange(
           @RequestParam(required = false) Integer start,
           @RequestParam(required = false) Integer end) {
     if (start == null || end == null) {
-      return rsList;
+      return ResponseEntity.ok().body(rsList);
     }
-    return rsList.subList(start - 1, end);
+    if (isInList(start)&&isInList(end)){
+      return ResponseEntity.ok().body((rsList.subList(start - 1, end)));
+    }
+    return ResponseEntity.badRequest().build();
+
 
   }
 
   @PostMapping("/rs/event")
-  public void addRsEvent(@Valid @RequestBody RsEvent rsEvent) throws JsonProcessingException {
+  public ResponseEntity addRsEvent(@Valid @RequestBody RsEvent rsEvent) throws JsonProcessingException {
     User user = rsEvent.getUser();
-    if (userService.getUserList().get(user.getUserName()) == null) {
-      userService.addUser(user.getUserName(), rsEvent.getUser());
+    boolean exist = userService.getUserList().stream()
+            .anyMatch(e->e.getUserName().equals(user.getUserName()));
+    if (!exist) {
+      userService.addUser(user);
     }
     rsList.add(rsEvent);
+    return ResponseEntity.status(201)
+            .header("index",String.valueOf(rsList.indexOf(rsEvent))).build();
   }
 
   @PutMapping("/rs/event/{id}")
-  public void modifyEvent(@PathVariable int id, @RequestBody RsEvent requestEvent) {
+  public ResponseEntity modifyEvent(@PathVariable int id, @RequestBody RsEvent requestEvent) {
 
     int index = id - 1;
     if (!isInList(index)) {
@@ -71,15 +79,17 @@ public class RsController {
     if (requestEvent.getKeyword() != null){
       rsEvent.setKeyword(requestEvent.getKeyword());
     }
+    return ResponseEntity.ok().build();
   }
 
 
   @DeleteMapping("/rs/event")
-  public void deleteEvent(@RequestParam int id) {
+  public ResponseEntity deleteEvent(@RequestParam int id) {
     int index = id - 1;
     if (isInList(index)) {
       rsList.remove(index);
     }
+    return ResponseEntity.ok().build();
   }
 
   private boolean isInList(int index) {
