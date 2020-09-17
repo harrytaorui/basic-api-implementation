@@ -114,7 +114,6 @@ public class RsController {
     if (!userRepository.existsById(userId)) {
       return ResponseEntity.badRequest().build();
     }
-    List<RsEventEntity> list = rsEventRepository.findAll();
     Optional<RsEventEntity> result = rsEventRepository.findById(rsEventId);
     if (!result.isPresent()) {
       return ResponseEntity.badRequest().build();

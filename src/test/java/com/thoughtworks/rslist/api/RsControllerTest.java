@@ -307,6 +307,44 @@ public class RsControllerTest {
 		assertEquals(entity.getKeyword(),"3");
 	}
 
+	@Test
+	void should_only_update_eventName_if_keyword_null() throws Exception {
+		UpdateEvent event = new UpdateEvent("流星",null,1);
+		String jsonString = objectMapper.writeValueAsString(event);
+		mockMvc.perform(patch("/rs/2").content(jsonString)
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+		List<RsEventEntity> rsEventEntityList = rsEventRepository.findAll();
+		RsEventEntity entity = rsEventEntityList.get(0);
+		assertEquals(entity.getEventName(),"流星");
+		assertEquals(entity.getKeyword(),"1");
+	}
+
+	@Test
+	void should_only_update_keyword_if_eventName_null() throws Exception {
+		UpdateEvent event = new UpdateEvent(null,"3",1);
+		String jsonString = objectMapper.writeValueAsString(event);
+		mockMvc.perform(patch("/rs/2").content(jsonString)
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+		List<RsEventEntity> rsEventEntityList = rsEventRepository.findAll();
+		RsEventEntity entity = rsEventEntityList.get(0);
+		assertEquals(entity.getEventName(),"下雨了");
+		assertEquals(entity.getKeyword(),"3");
+	}
+
+	@Test
+	void should_fail_update_if_userId_is_wrong() throws Exception {
+		UpdateEvent event = new UpdateEvent("流星","3",2);
+		String jsonString = objectMapper.writeValueAsString(event);
+		mockMvc.perform(patch("/rs/2").content(jsonString)
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
+		List<RsEventEntity> rsEventEntityList = rsEventRepository.findAll();
+		RsEventEntity entity = rsEventEntityList.get(0);
+		assertEquals(entity.getEventName(),"下雨了");
+		assertEquals(entity.getKeyword(),"1");
+	}
 
 
 	private User createUser() {
