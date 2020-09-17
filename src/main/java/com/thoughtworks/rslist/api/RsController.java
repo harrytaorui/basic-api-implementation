@@ -1,18 +1,23 @@
 package com.thoughtworks.rslist.api;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thoughtworks.rslist.Entity.RsEventEntity;
+import com.thoughtworks.rslist.Entity.UserEntity;
+import com.thoughtworks.rslist.Repository.RsEventRepository;
+import com.thoughtworks.rslist.Repository.UserRepository;
 import com.thoughtworks.rslist.dto.RsEvent;
 import com.thoughtworks.rslist.dto.User;
-import com.thoughtworks.rslist.exceptions.CommonError;
+import com.thoughtworks.rslist.exceptions.MyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 
 @RestController
@@ -21,48 +26,66 @@ public class RsController {
   @Autowired
   UserService userService;
 
+  @Autowired
+  UserRepository userRepository;
+
+  @Autowired
+  RsEventRepository rsEventRepository;
+
   private List<RsEvent> rsList = initRsList();
 
   private List<RsEvent> initRsList() {
     List<RsEvent> tempList = new ArrayList<>();
     User defaultUser = new User("tao", 19, "male", "1234567@qq.com", "12211333333");
-    tempList.add(new RsEvent("第一条事件", "1", defaultUser));
-    tempList.add(new RsEvent("第二条事件", "2", defaultUser));
-    tempList.add(new RsEvent("第三条事件", "3", defaultUser));
     return tempList;
   }
 
+  @JsonView(RsEvent.withOutUser.class)
   @GetMapping("/rs/{index}")
-  public RsEvent getRsEvent(@PathVariable int index) {
-    return rsList.get(index - 1);
+  public ResponseEntity<RsEvent> getRsEvent(@PathVariable int id) {
+    Optional<RsEventEntity> result = rsEventRepository.findById(id);
+    if (!result.isPresent()){
+      throw new MyException("invalid index");
+    }
+    RsEventEntity resultEvent = result.get();
+    UserEntity user = resultEvent.getUser();
+    RsEvent rsEvent = RsEvent.builder().eventName(resultEvent.getEventName())
+            .keyword(resultEvent.getKeyword())
+            .userId(user.getId()).build();
+    return ResponseEntity.ok().body(rsEvent);
   }
 
+  @JsonView(RsEvent.withOutUser.class)
   @GetMapping("/rs/list")
   public ResponseEntity<List<RsEvent>> getRsEventByRange(
           @RequestParam(required = false) Integer start,
           @RequestParam(required = false) Integer end) {
-    if (start == null || end == null) {
-      return ResponseEntity.ok().body(rsList);
+    start = start == null ? 0 : start - 1;
+    end = end == null ? rsList.size() : end;
+    if (!isInList(start) || !isInList(end - 1)) {
+      throw new MyException("invalid request param");
     }
-    if (isInList(start)&&isInList(end)){
-      return ResponseEntity.ok().body((rsList.subList(start - 1, end)));
-    }
-    return ResponseEntity.badRequest().build();
-
-
+    return ResponseEntity.ok().body((rsList.subList(start, end)));
   }
 
   @PostMapping("/rs/event")
-  public ResponseEntity addRsEvent(@Valid @RequestBody RsEvent rsEvent) throws JsonProcessingException {
-    User user = rsEvent.getUser();
-    boolean exist = userService.getUserList().stream()
-            .anyMatch(e->e.getUserName().equals(user.getUserName()));
-    if (!exist) {
-      userService.addUser(user);
+  public ResponseEntity addRsEvent(@Valid @RequestBody RsEvent rsEvent,
+                                   BindingResult bindingResult)
+          throws JsonProcessingException {
+    if (bindingResult.getFieldErrors().size() > 0) {
+      throw new MyException("invalid param");
     }
-    rsList.add(rsEvent);
+    if (!userRepository.existsById(rsEvent.getUserId())){
+      return ResponseEntity.badRequest().build();
+    }
+    RsEventEntity rsEventEntity = RsEventEntity.builder()
+            .eventName(rsEvent.getEventName())
+            .keyword(rsEvent.getKeyword())
+            .user(UserEntity.builder().build())
+            .build();
+    rsEventRepository.save(rsEventEntity);
     return ResponseEntity.status(201)
-            .header("index",String.valueOf(rsList.indexOf(rsEvent))).build();
+            .header("index", String.valueOf(rsEventEntity.getId())).build();
   }
 
   @PutMapping("/rs/event/{id}")
@@ -96,10 +119,4 @@ public class RsController {
     return index >= 0 && index < rsList.size();
   }
 
-  @ExceptionHandler(IndexOutOfBoundsException.class)
-  private ResponseEntity<CommonError> handleIndexOutOfBoundsException(IndexOutOfBoundsException exception) {
-    CommonError commonError = new CommonError();
-    commonError.setError("invalid request param");
-    return ResponseEntity.badRequest().body(commonError);
-  }
 }

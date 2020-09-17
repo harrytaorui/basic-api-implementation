@@ -7,6 +7,9 @@ import org.apache.logging.log4j.LogManager;
 
 @ControllerAdvice
 public class ExceptionHandler {
+
+	Logger logger = LogManager.getLogger(ExceptionHandler.class);
+
 	@org.springframework.web.bind.annotation.ExceptionHandler({
 			MyException.class})
 	public ResponseEntity<CommonError> handleIndexOutOfException(Exception ex) {
@@ -15,9 +18,7 @@ public class ExceptionHandler {
 		if (ex instanceof MyException) {
 			commonError.setError(((MyException) ex).getErrorMsg());
 		}
-		Logger logger = LogManager.getLogger(ExceptionHandler.class);
 		logger.error(commonError.getError());
-
 		return ResponseEntity.badRequest().body(commonError);
 	}
 }

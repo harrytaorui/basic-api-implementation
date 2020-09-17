@@ -2,7 +2,12 @@ package com.thoughtworks.rslist.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thoughtworks.rslist.Entity.UserEntity;
+import com.thoughtworks.rslist.Repository.UserRepository;
+import com.thoughtworks.rslist.dto.RsEvent;
 import com.thoughtworks.rslist.dto.User;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -11,10 +16,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -28,12 +34,31 @@ public class UserControllerTest {
 	@Autowired
 	UserService userService;
 
+	@Autowired
+	UserRepository userRepository;
+
+	@BeforeEach
+	void startUp() {
+		userRepository.deleteAll();
+		UserEntity user = UserEntity.builder()
+				.userName("user1")
+				.age(19)
+				.gender("male")
+				.email("1234567@qq.com")
+				.phone("12211333333")
+				.build();
+		userRepository.save(user);
+	}
+
 	@Test
 	void should_Register_User() throws Exception {
 		String jsonString = getJsonString(new User("harry", 19, "male", "1234567@qq.com", "12211333333"));
 		mockMvc.perform(post("/user/register").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
+		List<UserEntity> users = userRepository.findAll();
+		Assertions.assertEquals(2, users.size());
+		Assertions.assertEquals("harry", users.get(1).getUserName());
 	}
 
 
@@ -123,26 +148,53 @@ public class UserControllerTest {
 		mockMvc.perform(post("/user/register").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated())
-				.andExpect(header().string("index","0"));
+				.andExpect(header().string("index", "0"));
 	}
 
+	@Test
+	void should_return_invalid_user_when_user_invalid() throws Exception {
+		String jsonString = getJsonString(new User("harry", 11, "male", "1234567@qq.com", "12211333333"));
+		mockMvc.perform(post("/user/register").content(jsonString)
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.error", is("invalid user")));
+	}
 
 	@Test
 	void should_return_all_users() throws Exception {
 		userService.addUser(new User("harry", 19, "male", "1234567@qq.com", "12211333333"));
 		userService.addUser(new User("wang", 22, "male", "311111@qq.com", "12211334567"));
-		mockMvc.perform(get("/users")).andExpect(jsonPath("$",hasSize(2)))
-				.andExpect(jsonPath("$[0].userName",is("harry")))
-				.andExpect(jsonPath("$[0].age",is(19)))
-				.andExpect(jsonPath("$[0].gender",is("male")))
-				.andExpect(jsonPath("$[0].email",is("1234567@qq.com")))
-				.andExpect(jsonPath("$[0].phone",is("12211333333")))
-				.andExpect(jsonPath("$[1].userName",is("wang")))
-				.andExpect(jsonPath("$[1].age",is(22)))
-				.andExpect(jsonPath("$[1].gender",is("male")))
-				.andExpect(jsonPath("$[1].email",is("311111@qq.com")))
-				.andExpect(jsonPath("$[1].phone",is("12211334567")));
+		mockMvc.perform(get("/users")).andExpect(jsonPath("$", hasSize(2)))
+				.andExpect(jsonPath("$[0].user_name", is("harry")))
+				.andExpect(jsonPath("$[0].user_age", is(19)))
+				.andExpect(jsonPath("$[0].user_gender", is("male")))
+				.andExpect(jsonPath("$[0].user_email", is("1234567@qq.com")))
+				.andExpect(jsonPath("$[0].user_phone", is("12211333333")))
+				.andExpect(jsonPath("$[1].user_name", is("wang")))
+				.andExpect(jsonPath("$[1].user_age", is(22)))
+				.andExpect(jsonPath("$[1].user_gender", is("male")))
+				.andExpect(jsonPath("$[1].user_email", is("311111@qq.com")))
+				.andExpect(jsonPath("$[1].user_phone", is("12211334567")));
 	}
+
+	@Test
+	void should_get_user_by_id() throws Exception {
+		mockMvc.perform(get("/users/1")).andExpect(status().isOk())
+				.andExpect(jsonPath("$.user_name", is("user1")))
+				.andExpect(jsonPath("$.user_age", is(19)))
+				.andExpect(jsonPath("$.user_gender", is("male")))
+				.andExpect(jsonPath("$.user_email", is("1234567@qq.com")))
+				.andExpect(jsonPath("$.user_phone", is("12211333333")));
+	}
+
+
+	@Test
+	void should_delete_user_by_id() throws Exception {
+		mockMvc.perform(delete("/user/delete1")).andExpect(status().isNoContent());
+		List<UserEntity> users = userRepository.findAll();
+		Assertions.assertTrue(users.isEmpty());
+	}
+
 
 	private String getJsonString(User user) throws JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();
