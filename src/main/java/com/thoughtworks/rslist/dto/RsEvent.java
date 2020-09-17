@@ -32,10 +32,15 @@ public class RsEvent {
 	@JsonView(withOutUser.class)
 	private String keyword;
 
+	@NotNull
 	private User user;
+
+	private Integer votes;
 
 	@NotNull
 	private Integer userId;
+
+	private Integer id;
 
 	@JsonView(withUser.class)
 	public Integer getUserId() {

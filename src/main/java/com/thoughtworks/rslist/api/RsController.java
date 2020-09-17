@@ -24,6 +24,7 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -44,40 +45,31 @@ public class RsController {
   @Autowired
   VoteRepository voteRepository;
 
-  private List<RsEvent> rsList = initRsList();
-
-  private List<RsEvent> initRsList() {
-    List<RsEvent> tempList = new ArrayList<>();
-    User defaultUser = new User("tao", 19, "male", "1234567@qq.com", "12211333333");
-    return tempList;
-  }
-
-  @JsonView(RsEvent.withOutUser.class)
-  @GetMapping("/rs/{index}")
+  @GetMapping("/rs/{id}")
   public ResponseEntity<RsEvent> getRsEvent(@PathVariable int id) {
     Optional<RsEventEntity> result = rsEventRepository.findById(id);
     if (!result.isPresent()){
       throw new MyException("invalid index");
     }
     RsEventEntity resultEvent = result.get();
-    UserEntity user = resultEvent.getUser();
-    RsEvent rsEvent = RsEvent.builder().eventName(resultEvent.getEventName())
-            .keyword(resultEvent.getKeyword())
-            .userId(user.getId()).build();
+    RsEvent rsEvent = rsEventService.convertEntityToEvent(resultEvent);
     return ResponseEntity.ok().body(rsEvent);
   }
 
-  @JsonView(RsEvent.withOutUser.class)
   @GetMapping("/rs/list")
   public ResponseEntity<List<RsEvent>> getRsEventByRange(
           @RequestParam(required = false) Integer start,
           @RequestParam(required = false) Integer end) {
+    List<RsEventEntity> list = rsEventRepository.findAll();
     start = start == null ? 0 : start - 1;
-    end = end == null ? rsList.size() : end;
+    end = end == null ? list.size() : end;
     if (!isInList(start) || !isInList(end - 1)) {
       throw new MyException("invalid request param");
     }
-    return ResponseEntity.ok().body((rsList.subList(start, end)));
+    List<RsEvent> result = list.stream()
+            .map(e -> rsEventService.convertEntityToEvent(e))
+            .collect(Collectors.toList());
+    return ResponseEntity.ok().body((result.subList(start, end)));
   }
 
   @PostMapping("/rs/event")
@@ -96,22 +88,22 @@ public class RsController {
             .header("index", String.valueOf(rsEventEntity.getId())).build();
   }
 
-  @PutMapping("/rs/event/{id}")
-  public ResponseEntity modifyEvent(@PathVariable int id, @RequestBody RsEvent requestEvent) {
-
-    int index = id - 1;
-    if (!isInList(index)) {
-      throw new IndexOutOfBoundsException();
-    }
-    RsEvent rsEvent = rsList.get(index);
-    if (requestEvent.getEventName() != null) {
-      rsEvent.setEventName(requestEvent.getEventName());
-    }
-    if (requestEvent.getKeyword() != null) {
-      rsEvent.setKeyword(requestEvent.getKeyword());
-    }
-    return ResponseEntity.ok().build();
-  }
+//  @PutMapping("/rs/event/{id}")
+//  public ResponseEntity modifyEvent(@PathVariable int id, @RequestBody RsEvent requestEvent) {
+//
+//    int index = id - 1;
+//    if (!isInList(index)) {
+//      throw new IndexOutOfBoundsException();
+//    }
+//    RsEvent rsEvent = .get(index);
+//    if (requestEvent.getEventName() != null) {
+//      rsEvent.setEventName(requestEvent.getEventName());
+//    }
+//    if (requestEvent.getKeyword() != null) {
+//      rsEvent.setKeyword(requestEvent.getKeyword());
+//    }
+//    return ResponseEntity.ok().build();
+//  }
 
   @PatchMapping("/rs/{rsEventId}")
   public ResponseEntity updateEvent(@PathVariable int rsEventId,
@@ -141,18 +133,19 @@ public class RsController {
 
   @DeleteMapping("/rs/event")
   public ResponseEntity deleteEvent(@RequestParam int id) {
-    int index = id - 1;
-    if (isInList(index)) {
-      rsList.remove(index);
+    if (isInList(id)) {
+      rsEventRepository.deleteById(id);
     }
     return ResponseEntity.ok().build();
   }
 
   @PostMapping("/rs/vote/{rsEventId}")
   public ResponseEntity voteEvent(@PathVariable int rsEventId, @RequestBody VoteRecord record) {
-    if (!rsEventRepository.existsById(rsEventId)) {
+    Optional<RsEventEntity> eventResult = rsEventRepository.findById(rsEventId);
+    if (!eventResult.isPresent()) {
       return ResponseEntity.badRequest().build();
     }
+    RsEventEntity rsEventEntity = eventResult.get();
     Optional<UserEntity> result = userRepository.findById(record.getUserId());
     if (!result.isPresent()) {
       return ResponseEntity.badRequest().build();
@@ -163,8 +156,13 @@ public class RsController {
     if (remainVotes < requestVotes) {
       return ResponseEntity.badRequest().build();
     }
+    //decrease user vote
     userEntity.setVotes(remainVotes - requestVotes);
     userRepository.save(userEntity);
+    //increase event vote
+    rsEventEntity.setVotes(rsEventEntity.getVotes() + requestVotes);
+    rsEventRepository.save(rsEventEntity);
+    //save vote record
     VoteEntity voteEntity = VoteEntity.builder()
             .user(userEntity)
             .voteNum(requestVotes)
@@ -175,7 +173,7 @@ public class RsController {
   }
 
   private boolean isInList(int index) {
-    return index >= 0 && index < rsList.size();
+    return index >= 0 && index < rsEventRepository.findAll().size();
   }
 
 }

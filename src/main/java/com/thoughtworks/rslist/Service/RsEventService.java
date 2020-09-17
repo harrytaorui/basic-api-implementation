@@ -17,7 +17,19 @@ public class RsEventService {
 				.eventName(rsEvent.getEventName())
 				.keyword(rsEvent.getKeyword())
 				.user(UserEntity.builder().id(rsEvent.getUserId()).build())
+				.votes(rsEvent.getVotes())
 				.build();
 		return rsEventEntity;
+	}
+
+	public RsEvent convertEntityToEvent(RsEventEntity rsEventEntity) {
+		RsEvent rsEvent = RsEvent.builder()
+				.eventName(rsEventEntity.getEventName())
+				.keyword(rsEventEntity.getKeyword())
+				.userId(rsEventEntity.getUser().getId())
+				.votes(rsEventEntity.getVotes())
+				.id(rsEventEntity.getId())
+				.build();
+		return rsEvent;
 	}
 }
