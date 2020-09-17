@@ -1,5 +1,0 @@
-mysql.driver=com.mysql.jdbc.Driver
-mysql.url=jdbc:mysql://localhost:3306/rs_system?characterEncoding=UTF-8
-mysql.username=root
-mysql.password=root
-spring.jpa.hibernate.ddl-auto=create
