@@ -4,13 +4,16 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.thoughtworks.rslist.Entity.RsEventEntity;
 import com.thoughtworks.rslist.Entity.UserEntity;
+import com.thoughtworks.rslist.Entity.VoteEntity;
 import com.thoughtworks.rslist.Repository.RsEventRepository;
 import com.thoughtworks.rslist.Repository.UserRepository;
+import com.thoughtworks.rslist.Repository.VoteRepository;
 import com.thoughtworks.rslist.Service.RsEventService;
 import com.thoughtworks.rslist.Service.UserService;
 import com.thoughtworks.rslist.dto.RsEvent;
 import com.thoughtworks.rslist.dto.UpdateEvent;
 import com.thoughtworks.rslist.dto.User;
+import com.thoughtworks.rslist.dto.VoteRecord;
 import com.thoughtworks.rslist.exceptions.MyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +40,9 @@ public class RsController {
 
   @Autowired
   RsEventRepository rsEventRepository;
+
+  @Autowired
+  VoteRepository voteRepository;
 
   private List<RsEvent> rsList = initRsList();
 
@@ -140,6 +146,32 @@ public class RsController {
       rsList.remove(index);
     }
     return ResponseEntity.ok().build();
+  }
+
+  @PostMapping("/rs/vote/{rsEventId}")
+  public ResponseEntity voteEvent(@PathVariable int rsEventId, @RequestBody VoteRecord record) {
+    if (!rsEventRepository.existsById(rsEventId)) {
+      return ResponseEntity.badRequest().build();
+    }
+    Optional<UserEntity> result = userRepository.findById(record.getUserId());
+    if (!result.isPresent()) {
+      return ResponseEntity.badRequest().build();
+    }
+    UserEntity userEntity = result.get();
+    int remainVotes = userEntity.getVotes();
+    int requestVotes = record.getVoteNum();
+    if (remainVotes < requestVotes) {
+      return ResponseEntity.badRequest().build();
+    }
+    userEntity.setVotes(remainVotes - requestVotes);
+    userRepository.save(userEntity);
+    VoteEntity voteEntity = VoteEntity.builder()
+            .user(userEntity)
+            .voteNum(requestVotes)
+            .voteTime(record.getVoteTime())
+            .build();
+    voteRepository.save(voteEntity);
+    return ResponseEntity.status(201).build();
   }
 
   private boolean isInList(int index) {

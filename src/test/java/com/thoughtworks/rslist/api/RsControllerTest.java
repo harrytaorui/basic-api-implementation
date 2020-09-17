@@ -4,13 +4,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.Entity.RsEventEntity;
 import com.thoughtworks.rslist.Entity.UserEntity;
+import com.thoughtworks.rslist.Entity.VoteEntity;
 import com.thoughtworks.rslist.Repository.RsEventRepository;
 import com.thoughtworks.rslist.Repository.UserRepository;
+import com.thoughtworks.rslist.Repository.VoteRepository;
 import com.thoughtworks.rslist.Service.RsEventService;
 import com.thoughtworks.rslist.Service.UserService;
 import com.thoughtworks.rslist.dto.RsEvent;
 import com.thoughtworks.rslist.dto.UpdateEvent;
 import com.thoughtworks.rslist.dto.User;
+import com.thoughtworks.rslist.dto.VoteRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +50,9 @@ public class RsControllerTest {
 	@Autowired
 	RsEventRepository rsEventRepository;
 
+	@Autowired
+	VoteRepository voteRepository;
+
 	ObjectMapper objectMapper = new ObjectMapper();
 
 	@BeforeEach
@@ -59,6 +65,7 @@ public class RsControllerTest {
 				.gender("male")
 				.email("1234567@qq.com")
 				.phone("12211333333")
+				.votes(10)
 				.build();
 		userRepository.save(user);
 		RsEventEntity rsEventEntity = RsEventEntity.builder()
@@ -346,6 +353,29 @@ public class RsControllerTest {
 		assertEquals(entity.getKeyword(),"1");
 	}
 
+	@Test
+	void should_vote_when_remain_votes_greater_than_voteNum() throws Exception {
+		VoteRecord record = new VoteRecord(5,1,"2020");
+		String jsonString = objectMapper.writeValueAsString(record);
+		mockMvc.perform(post("/rs/vote/2").content(jsonString)
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+		VoteEntity voteEntity = voteRepository.findAll().get(0);
+		UserEntity userEntity = userRepository.findAll().get(0);
+		assertEquals(voteEntity.getVoteNum(),5);
+		assertEquals(voteEntity.getVoteTime(),"2020");
+		assertEquals(voteEntity.getUser().getId(),1);
+		assertEquals(userEntity.getVotes(),5);
+	}
+
+	@Test
+	void should_fail_vote_when_remain_votes_less_than_voteNum() throws Exception {
+		VoteRecord record = new VoteRecord(11,1,"2020");
+		String jsonString = objectMapper.writeValueAsString(record);
+		mockMvc.perform(post("/rs/vote/2").content(jsonString)
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
+	}
 
 	private User createUser() {
 		return new User("小王", 19, "male", "1234567@qq.com", "12211333333");
