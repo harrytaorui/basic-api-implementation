@@ -6,9 +6,10 @@ import com.thoughtworks.rslist.Entity.RsEventEntity;
 import com.thoughtworks.rslist.Entity.UserEntity;
 import com.thoughtworks.rslist.Repository.RsEventRepository;
 import com.thoughtworks.rslist.Repository.UserRepository;
+import com.thoughtworks.rslist.Service.RsEventService;
+import com.thoughtworks.rslist.Service.UserService;
 import com.thoughtworks.rslist.dto.RsEvent;
 import com.thoughtworks.rslist.dto.User;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +22,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -37,6 +37,9 @@ public class RsControllerTest {
 
 	@Autowired
 	UserService userService;
+
+	@Autowired
+	RsEventService rsEventService;
 
 	@Autowired
 	UserRepository userRepository;
@@ -56,6 +59,13 @@ public class RsControllerTest {
 				.phone("12211333333")
 				.build();
 		userRepository.save(user);
+		RsEventEntity rsEventEntity = RsEventEntity.builder()
+				.user(user)
+				.keyword("1")
+				.eventName("下雨了")
+				.build();
+		rsEventRepository.save(rsEventEntity);
+
 	}
 
 //
@@ -255,6 +265,31 @@ public class RsControllerTest {
 //
 //	}
 
+
+	@Test
+	void should_add_rsEvent_when_user_exist() throws Exception {
+		RsEvent rsEvent = RsEvent.builder().eventName("花木兰电影上映").keyword("2")
+				.userId(1).build();
+		String jsonString = rsEvent.toJsonWithUser();
+		mockMvc.perform(post("/rs/event").content(jsonString)
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+		List<RsEventEntity> rsEventEntityList = rsEventRepository.findAll();
+		assertEquals(rsEventEntityList.size(), 2);
+		assertEquals(rsEventEntityList.get(1).getEventName(), "花木兰电影上映");
+	}
+
+	@Test
+	void should_fail_add_rsEvent_when_user_not_exist() throws Exception {
+		RsEvent rsEvent = RsEvent.builder().eventName("花木兰电影上映").keyword("2")
+				.userId(2).build();
+		String jsonString = rsEvent.toJsonWithUser();
+		mockMvc.perform(post("/rs/event").content(jsonString)
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
+		List<RsEventEntity> rsEventEntityList = rsEventRepository.findAll();
+		assertEquals(rsEventEntityList.size(), 1);
+	}
 
 	private String getJsonString(RsEvent rsEvent) throws JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();

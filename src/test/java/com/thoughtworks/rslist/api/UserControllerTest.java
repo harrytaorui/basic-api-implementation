@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.Entity.UserEntity;
 import com.thoughtworks.rslist.Repository.UserRepository;
-import com.thoughtworks.rslist.dto.RsEvent;
+import com.thoughtworks.rslist.Service.UserService;
 import com.thoughtworks.rslist.dto.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

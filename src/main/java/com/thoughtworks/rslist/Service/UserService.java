@@ -1,4 +1,4 @@
-package com.thoughtworks.rslist.api;
+package com.thoughtworks.rslist.Service;
 
 
 import com.thoughtworks.rslist.Entity.UserEntity;

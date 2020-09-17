@@ -3,14 +3,13 @@ package com.thoughtworks.rslist.api;
 import com.thoughtworks.rslist.Entity.UserEntity;
 import com.thoughtworks.rslist.Repository.RsEventRepository;
 import com.thoughtworks.rslist.Repository.UserRepository;
+import com.thoughtworks.rslist.Service.UserService;
 import com.thoughtworks.rslist.dto.User;
-import com.thoughtworks.rslist.exceptions.CommonError;
 import com.thoughtworks.rslist.exceptions.MyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;

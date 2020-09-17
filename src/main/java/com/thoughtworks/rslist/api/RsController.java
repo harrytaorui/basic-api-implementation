@@ -6,6 +6,8 @@ import com.thoughtworks.rslist.Entity.RsEventEntity;
 import com.thoughtworks.rslist.Entity.UserEntity;
 import com.thoughtworks.rslist.Repository.RsEventRepository;
 import com.thoughtworks.rslist.Repository.UserRepository;
+import com.thoughtworks.rslist.Service.RsEventService;
+import com.thoughtworks.rslist.Service.UserService;
 import com.thoughtworks.rslist.dto.RsEvent;
 import com.thoughtworks.rslist.dto.User;
 import com.thoughtworks.rslist.exceptions.MyException;
@@ -25,6 +27,9 @@ public class RsController {
 
   @Autowired
   UserService userService;
+
+  @Autowired
+  RsEventService rsEventService;
 
   @Autowired
   UserRepository userRepository;
@@ -73,16 +78,12 @@ public class RsController {
                                    BindingResult bindingResult)
           throws JsonProcessingException {
     if (bindingResult.getFieldErrors().size() > 0) {
-      throw new MyException("invalid param");
+      throw new MyException(bindingResult.getAllErrors().toString());
     }
-    if (!userRepository.existsById(rsEvent.getUserId())){
+    RsEventEntity rsEventEntity = rsEventService.convertEventToEntity(rsEvent);
+    if (!userRepository.existsById(rsEventEntity.getUser().getId())){
       return ResponseEntity.badRequest().build();
     }
-    RsEventEntity rsEventEntity = RsEventEntity.builder()
-            .eventName(rsEvent.getEventName())
-            .keyword(rsEvent.getKeyword())
-            .user(UserEntity.builder().build())
-            .build();
     rsEventRepository.save(rsEventEntity);
     return ResponseEntity.status(201)
             .header("index", String.valueOf(rsEventEntity.getId())).build();
