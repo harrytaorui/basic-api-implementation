@@ -2,7 +2,9 @@ package com.thoughtworks.rslist.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thoughtworks.rslist.Entity.RsEventEntity;
 import com.thoughtworks.rslist.Entity.UserEntity;
+import com.thoughtworks.rslist.Repository.RsEventRepository;
 import com.thoughtworks.rslist.Repository.UserRepository;
 import com.thoughtworks.rslist.Service.UserService;
 import com.thoughtworks.rslist.dto.User;
@@ -20,6 +22,8 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -37,17 +41,46 @@ public class UserControllerTest {
 	@Autowired
 	UserRepository userRepository;
 
+	@Autowired
+	RsEventRepository rsEventRepository;
+
 	@BeforeEach
 	void startUp() {
 		userRepository.deleteAll();
-		UserEntity user = UserEntity.builder()
+		UserEntity user1 = UserEntity.builder()
 				.userName("user1")
 				.age(19)
 				.gender("male")
 				.email("1234567@qq.com")
 				.phone("12211333333")
 				.build();
-		userRepository.save(user);
+		userRepository.save(user1);
+		UserEntity user2 = UserEntity.builder()
+				.userName("user2")
+				.age(19)
+				.gender("male")
+				.email("1234567@qq.com")
+				.phone("12211333333")
+				.build();
+		userRepository.save(user2);
+		RsEventEntity rsEventEntity1 = RsEventEntity.builder()
+				.user(user1)
+				.keyword("1")
+				.eventName("下雨了")
+				.build();
+		rsEventRepository.save(rsEventEntity1);
+		RsEventEntity rsEventEntity2 = RsEventEntity.builder()
+				.user(user1)
+				.keyword("2")
+				.eventName("没下雨")
+				.build();
+		rsEventRepository.save(rsEventEntity2);
+		RsEventEntity rsEventEntity3 = RsEventEntity.builder()
+				.user(user2)
+				.keyword("3")
+				.eventName("雨")
+				.build();
+		rsEventRepository.save(rsEventEntity3);
 	}
 
 	@Test
@@ -57,8 +90,8 @@ public class UserControllerTest {
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 		List<UserEntity> users = userRepository.findAll();
-		Assertions.assertEquals(2, users.size());
-		Assertions.assertEquals("harry", users.get(1).getUserName());
+		assertEquals(2, users.size());
+		assertEquals("harry", users.get(1).getUserName());
 	}
 
 
@@ -192,9 +225,18 @@ public class UserControllerTest {
 	void should_delete_user_by_id() throws Exception {
 		mockMvc.perform(delete("/user/delete1")).andExpect(status().isNoContent());
 		List<UserEntity> users = userRepository.findAll();
-		Assertions.assertTrue(users.isEmpty());
+		assertEquals(users.size(),1);
 	}
 
+	@Test
+	void should_delete_user_and_event() throws Exception {
+		mockMvc.perform(delete("/user/delete1")).andExpect(status().isNoContent());
+		List<UserEntity> users = userRepository.findAll();
+		List<RsEventEntity> events = rsEventRepository.findAll();
+		assertEquals(events.size(),1);
+		assertNotEquals(events.get(0).getUser().getUserName(),"user1");
+
+	}
 
 	private String getJsonString(User user) throws JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();
