@@ -9,6 +9,7 @@ import com.thoughtworks.rslist.Repository.UserRepository;
 import com.thoughtworks.rslist.Service.RsEventService;
 import com.thoughtworks.rslist.Service.UserService;
 import com.thoughtworks.rslist.dto.RsEvent;
+import com.thoughtworks.rslist.dto.UpdateEvent;
 import com.thoughtworks.rslist.dto.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,8 @@ public class RsControllerTest {
 
 	@Autowired
 	RsEventRepository rsEventRepository;
+
+	ObjectMapper objectMapper = new ObjectMapper();
 
 	@BeforeEach
 	void startUp() {
@@ -291,10 +294,20 @@ public class RsControllerTest {
 	}
 
 
-	private String getJsonString(RsEvent rsEvent) throws JsonProcessingException {
-		ObjectMapper objectMapper = new ObjectMapper();
-		return objectMapper.writeValueAsString(rsEvent);
+	@Test
+	void should_update_event_if_event_created_by_user() throws Exception {
+		UpdateEvent event = new UpdateEvent("流星","3",1);
+		String jsonString = objectMapper.writeValueAsString(event);
+		mockMvc.perform(patch("/rs/2").content(jsonString)
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+		List<RsEventEntity> rsEventEntityList = rsEventRepository.findAll();
+		RsEventEntity entity = rsEventEntityList.get(0);
+		assertEquals(entity.getEventName(),"流星");
+		assertEquals(entity.getKeyword(),"3");
 	}
+
+
 
 	private User createUser() {
 		return new User("小王", 19, "male", "1234567@qq.com", "12211333333");

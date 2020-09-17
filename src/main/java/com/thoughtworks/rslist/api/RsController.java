@@ -9,6 +9,7 @@ import com.thoughtworks.rslist.Repository.UserRepository;
 import com.thoughtworks.rslist.Service.RsEventService;
 import com.thoughtworks.rslist.Service.UserService;
 import com.thoughtworks.rslist.dto.RsEvent;
+import com.thoughtworks.rslist.dto.UpdateEvent;
 import com.thoughtworks.rslist.dto.User;
 import com.thoughtworks.rslist.exceptions.MyException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,12 +101,38 @@ public class RsController {
     if (requestEvent.getEventName() != null) {
       rsEvent.setEventName(requestEvent.getEventName());
     }
-    if (requestEvent.getKeyword() != null){
+    if (requestEvent.getKeyword() != null) {
       rsEvent.setKeyword(requestEvent.getKeyword());
     }
     return ResponseEntity.ok().build();
   }
 
+  @PatchMapping("/rs/{rsEventId}")
+  public ResponseEntity updateEvent(@PathVariable int rsEventId,
+                                    @RequestBody UpdateEvent updateEvent) {
+    int userId = updateEvent.getUserId();
+    if (!userRepository.existsById(userId)) {
+      return ResponseEntity.badRequest().build();
+    }
+    List<RsEventEntity> list = rsEventRepository.findAll();
+    Optional<RsEventEntity> result = rsEventRepository.findById(rsEventId);
+    if (!result.isPresent()) {
+      return ResponseEntity.badRequest().build();
+    }
+    RsEventEntity entity = result.get();
+    if (entity.getUser().getId() != userId) {
+      return ResponseEntity.badRequest().build();
+    }
+    String eventName, keyword;
+    if ((eventName = updateEvent.getEventName()) != null) {
+      entity.setEventName(eventName);
+    }
+    if ((keyword = updateEvent.getKeyword()) != null) {
+      entity.setKeyword(keyword);
+    }
+    rsEventRepository.save(entity);
+    return ResponseEntity.ok().build();
+  }
 
   @DeleteMapping("/rs/event")
   public ResponseEntity deleteEvent(@RequestParam int id) {
