@@ -1,6 +1,5 @@
 package com.thoughtworks.rslist.Entity;
 
-import com.thoughtworks.rslist.dto.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -1,13 +1,13 @@
 package com.thoughtworks.rslist.Entity;
 
 
-import com.thoughtworks.rslist.dto.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -23,9 +23,12 @@ public class VoteEntity {
 	@Column(name = "vote_number")
 	private Integer voteNum;
 	@Column(name = "time")
-	private String voteTime;
+	private LocalDateTime voteTime;
 
 	@ManyToOne
 	@JoinColumn(name = "user_id")
 	private UserEntity user;
+	@ManyToOne
+	@JoinColumn(name = "event_id")
+	private RsEventEntity event;
 }

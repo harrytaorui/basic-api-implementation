@@ -1,9 +1,9 @@
 package com.thoughtworks.rslist.exceptions;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 @ControllerAdvice
 public class ExceptionHandler {

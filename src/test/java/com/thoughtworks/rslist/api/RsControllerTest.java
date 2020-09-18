@@ -13,6 +13,7 @@ import com.thoughtworks.rslist.dto.RsEvent;
 import com.thoughtworks.rslist.dto.UpdateEvent;
 import com.thoughtworks.rslist.dto.User;
 import com.thoughtworks.rslist.dto.VoteRecord;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +23,15 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -58,8 +60,7 @@ public class RsControllerTest {
 
 	@BeforeEach
 	void startUp() {
-		userRepository.deleteAll();
-		rsEventRepository.deleteAll();
+
 		UserEntity user = UserEntity.builder()
 				.userName("user1")
 				.age(19)
@@ -86,6 +87,12 @@ public class RsControllerTest {
 
 	}
 
+	@AfterEach
+	void tearDown() {
+		userRepository.deleteAll();
+		rsEventRepository.deleteAll();
+		voteRepository.deleteAll();
+	}
 
 	@Test
 	void should_get_one_rs_event() throws Exception {
@@ -309,74 +316,74 @@ public class RsControllerTest {
 
 	@Test
 	void should_update_event_if_event_created_by_user() throws Exception {
-		UpdateEvent event = new UpdateEvent("流星","3",1);
+		UpdateEvent event = new UpdateEvent("流星", "3", 1);
 		String jsonString = objectMapper.writeValueAsString(event);
 		mockMvc.perform(patch("/rs/2").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 		List<RsEventEntity> rsEventEntityList = rsEventRepository.findAll();
 		RsEventEntity entity = rsEventEntityList.get(0);
-		assertEquals(entity.getEventName(),"流星");
-		assertEquals(entity.getKeyword(),"3");
+		assertEquals(entity.getEventName(), "流星");
+		assertEquals(entity.getKeyword(), "3");
 	}
 
 	@Test
 	void should_only_update_eventName_if_keyword_null() throws Exception {
-		UpdateEvent event = new UpdateEvent("流星",null,1);
+		UpdateEvent event = new UpdateEvent("流星", null, 1);
 		String jsonString = objectMapper.writeValueAsString(event);
 		mockMvc.perform(patch("/rs/2").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 		List<RsEventEntity> rsEventEntityList = rsEventRepository.findAll();
 		RsEventEntity entity = rsEventEntityList.get(0);
-		assertEquals(entity.getEventName(),"流星");
-		assertEquals(entity.getKeyword(),"1");
+		assertEquals(entity.getEventName(), "流星");
+		assertEquals(entity.getKeyword(), "1");
 	}
 
 	@Test
 	void should_only_update_keyword_if_eventName_null() throws Exception {
-		UpdateEvent event = new UpdateEvent(null,"3",1);
+		UpdateEvent event = new UpdateEvent(null, "3", 1);
 		String jsonString = objectMapper.writeValueAsString(event);
 		mockMvc.perform(patch("/rs/2").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 		List<RsEventEntity> rsEventEntityList = rsEventRepository.findAll();
 		RsEventEntity entity = rsEventEntityList.get(0);
-		assertEquals(entity.getEventName(),"下雨了");
-		assertEquals(entity.getKeyword(),"3");
+		assertEquals(entity.getEventName(), "下雨了");
+		assertEquals(entity.getKeyword(), "3");
 	}
 
 	@Test
 	void should_fail_update_if_userId_is_wrong() throws Exception {
-		UpdateEvent event = new UpdateEvent("流星","3",2);
+		UpdateEvent event = new UpdateEvent("流星", "3", 2);
 		String jsonString = objectMapper.writeValueAsString(event);
 		mockMvc.perform(patch("/rs/2").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest());
 		List<RsEventEntity> rsEventEntityList = rsEventRepository.findAll();
 		RsEventEntity entity = rsEventEntityList.get(0);
-		assertEquals(entity.getEventName(),"下雨了");
-		assertEquals(entity.getKeyword(),"1");
+		assertEquals(entity.getEventName(), "下雨了");
+		assertEquals(entity.getKeyword(), "1");
 	}
 
 	@Test
 	void should_vote_when_remain_votes_greater_than_voteNum() throws Exception {
-		VoteRecord record = new VoteRecord(5,1,"2020");
+		VoteRecord record = new VoteRecord(5, 1, LocalDateTime.now());
 		String jsonString = objectMapper.writeValueAsString(record);
 		mockMvc.perform(post("/rs/vote/2").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 		VoteEntity voteEntity = voteRepository.findAll().get(0);
 		UserEntity userEntity = userRepository.findAll().get(0);
-		assertEquals(voteEntity.getVoteNum(),5);
-		assertEquals(voteEntity.getVoteTime(),"2020");
-		assertEquals(voteEntity.getUser().getId(),1);
-		assertEquals(userEntity.getVotes(),5);
+		assertEquals(voteEntity.getVoteNum(), 5);
+		assertEquals(voteEntity.getVoteTime(), "2020");
+		assertEquals(voteEntity.getUser().getId(), 1);
+		assertEquals(userEntity.getVotes(), 5);
 	}
 
 	@Test
 	void should_fail_vote_when_remain_votes_less_than_voteNum() throws Exception {
-		VoteRecord record = new VoteRecord(11,1,"2020");
+		VoteRecord record = new VoteRecord(11, 1, LocalDateTime.now());
 		String jsonString = objectMapper.writeValueAsString(record);
 		mockMvc.perform(post("/rs/vote/2").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))

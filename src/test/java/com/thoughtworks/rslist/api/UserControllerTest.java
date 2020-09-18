@@ -224,7 +224,7 @@ public class UserControllerTest {
 	void should_delete_user_by_id() throws Exception {
 		mockMvc.perform(delete("/user/delete1")).andExpect(status().isNoContent());
 		List<UserEntity> users = userRepository.findAll();
-		assertEquals(users.size(),1);
+		assertEquals(users.size(), 1);
 	}
 
 	@Test
@@ -232,8 +232,8 @@ public class UserControllerTest {
 		mockMvc.perform(delete("/user/delete1")).andExpect(status().isNoContent());
 		List<UserEntity> users = userRepository.findAll();
 		List<RsEventEntity> events = rsEventRepository.findAll();
-		assertEquals(events.size(),1);
-		assertNotEquals(events.get(0).getUser().getUserName(),"user1");
+		assertEquals(events.size(), 1);
+		assertNotEquals(events.get(0).getUser().getUserName(), "user1");
 
 	}
 

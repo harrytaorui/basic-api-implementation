@@ -1,4 +1,5 @@
 package com.thoughtworks.rslist.Entity;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,6 +29,4 @@ public class UserEntity {
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
 	private List<RsEventEntity> rsEvents;
-	@OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
-	private List<VoteEntity> voteLists;
 }
