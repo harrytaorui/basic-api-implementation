@@ -80,10 +80,12 @@ public class VoteControllerTest {
 		rsEventRepository.save(rsEventEntity2);
 		VoteEntity voteEntity1 = VoteEntity.builder()
 				.voteNum(1)
+				.user(user)
 				.voteTime(LocalDateTime.now())
 				.build();
 		VoteEntity voteEntity2 = VoteEntity.builder()
 				.voteNum(2)
+				.user(user)
 				.voteTime(LocalDateTime.now())
 				.build();
 		voteRepository.save(voteEntity1);
@@ -92,9 +94,9 @@ public class VoteControllerTest {
 
 	@AfterEach
 	void tearDown() {
-		userRepository.deleteAll();
-		rsEventRepository.deleteAll();
 		voteRepository.deleteAll();
+		rsEventRepository.deleteAll();
+		userRepository.deleteAll();
 	}
 
 	@Test

@@ -11,6 +11,7 @@ import com.thoughtworks.rslist.dto.VoteRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -49,9 +50,12 @@ public class VoteController {
 	}
 
 	@GetMapping("/vote/time")
-	public ResponseEntity<List<VoteRecord>> getTimeRangeVote(@RequestParam LocalDateTime startTime,
-	                                                         @RequestParam LocalDateTime endTime) {
-		List<VoteEntity> voteResult = voteRepository.findAllByVoteTimeBetween(startTime,endTime);
+	public ResponseEntity<List<VoteRecord>> getTimeRangeVote
+			(@RequestParam
+			 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+			 @RequestParam
+			 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
+		List<VoteEntity> voteResult = voteRepository.findAllByVoteTimeBetween(startTime, endTime);
 		List<VoteRecord> voteRecords = voteResult.stream().map(vote -> voteService.convertEntityToVote(vote))
 				.collect(Collectors.toList());
 		return ResponseEntity.ok().body(voteRecords);
