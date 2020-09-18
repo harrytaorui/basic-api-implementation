@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,6 +73,7 @@ public class RsController {
     return ResponseEntity.ok().body((result.subList(start, end)));
   }
 
+  @Transactional
   @PostMapping("/rs/event")
   public ResponseEntity addRsEvent(@Valid @RequestBody RsEvent rsEvent,
                                    BindingResult bindingResult)
@@ -105,6 +107,7 @@ public class RsController {
 //    return ResponseEntity.ok().build();
 //  }
 
+  @Transactional
   @PatchMapping("/rs/{rsEventId}")
   public ResponseEntity updateEvent(@PathVariable int rsEventId,
                                     @RequestBody UpdateEvent updateEvent) {
@@ -131,6 +134,7 @@ public class RsController {
     return ResponseEntity.ok().build();
   }
 
+  @Transactional
   @DeleteMapping("/rs/event")
   public ResponseEntity deleteEvent(@RequestParam int id) {
     if (isInList(id)) {
@@ -139,6 +143,7 @@ public class RsController {
     return ResponseEntity.ok().build();
   }
 
+  @Transactional
   @PostMapping("/rs/vote/{rsEventId}")
   public ResponseEntity voteEvent(@PathVariable int rsEventId, @RequestBody VoteRecord record) {
     Optional<RsEventEntity> eventResult = rsEventRepository.findById(rsEventId);
