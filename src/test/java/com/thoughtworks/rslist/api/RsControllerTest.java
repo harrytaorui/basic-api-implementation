@@ -89,9 +89,11 @@ public class RsControllerTest {
 
 	@AfterEach
 	void tearDown() {
-		userRepository.deleteAll();
-		rsEventRepository.deleteAll();
 		voteRepository.deleteAll();
+		rsEventRepository.deleteAll();
+		userRepository.deleteAll();
+
+
 	}
 
 	@Test
@@ -368,7 +370,7 @@ public class RsControllerTest {
 
 	@Test
 	void should_vote_when_remain_votes_greater_than_voteNum() throws Exception {
-		VoteRecord record = new VoteRecord(5, 1, LocalDateTime.now());
+		VoteRecord record = new VoteRecord(5, 1,LocalDateTime.now());
 		String jsonString = objectMapper.writeValueAsString(record);
 		mockMvc.perform(post("/rs/vote/2").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
@@ -376,7 +378,6 @@ public class RsControllerTest {
 		VoteEntity voteEntity = voteRepository.findAll().get(0);
 		UserEntity userEntity = userRepository.findAll().get(0);
 		assertEquals(voteEntity.getVoteNum(), 5);
-		assertEquals(voteEntity.getVoteTime(), "2020");
 		assertEquals(voteEntity.getUser().getId(), 1);
 		assertEquals(userEntity.getVotes(), 5);
 	}
