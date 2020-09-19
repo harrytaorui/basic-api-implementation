@@ -14,6 +14,7 @@ import com.thoughtworks.rslist.dto.UpdateEvent;
 import com.thoughtworks.rslist.dto.VoteRecord;
 import com.thoughtworks.rslist.exceptions.MyException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -142,7 +143,8 @@ public class RsController {
 
 	@Transactional
 	@PostMapping("/rs/vote/{rsEventId}")
-	public ResponseEntity voteEvent(@PathVariable int rsEventId, @RequestBody VoteRecord record) {
+	public ResponseEntity voteEvent(@PathVariable int rsEventId,
+	                                @RequestBody VoteRecord record) {
 		Optional<RsEventEntity> eventResult = rsEventRepository.findById(rsEventId);
 		if (!eventResult.isPresent()) {
 			return ResponseEntity.badRequest().build();
