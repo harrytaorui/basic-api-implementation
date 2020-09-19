@@ -1,6 +1,7 @@
 package com.thoughtworks.rslist.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.thoughtworks.rslist.DataSource.DataSourceConfig;
 import com.thoughtworks.rslist.Entity.RsEventEntity;
 import com.thoughtworks.rslist.Entity.UserEntity;
 import com.thoughtworks.rslist.Entity.VoteEntity;
@@ -13,8 +14,8 @@ import com.thoughtworks.rslist.dto.RsEvent;
 import com.thoughtworks.rslist.dto.UpdateEvent;
 import com.thoughtworks.rslist.dto.VoteRecord;
 import com.thoughtworks.rslist.exceptions.MyException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -29,20 +30,20 @@ import java.util.stream.Collectors;
 @RestController
 public class RsController {
 
-	@Autowired
-	UserService userService;
+	private final UserRepository userRepository;
+	private final RsEventRepository rsEventRepository;
+	private final VoteRepository voteRepository;
+	ApplicationContext context = new AnnotationConfigApplicationContext(DataSourceConfig.class);
+	RsEventService rsEventService = context.getBean(RsEventService.class);
+	UserService userService = context.getBean(UserService.class);
 
-	@Autowired
-	RsEventService rsEventService;
-
-	@Autowired
-	UserRepository userRepository;
-
-	@Autowired
-	RsEventRepository rsEventRepository;
-
-	@Autowired
-	VoteRepository voteRepository;
+	public RsController(UserRepository userRepository,
+	                    RsEventRepository rsEventRepository,
+	                    VoteRepository voteRepository) {
+		this.userRepository = userRepository;
+		this.rsEventRepository = rsEventRepository;
+		this.voteRepository = voteRepository;
+	}
 
 	@GetMapping("/rs/{id}")
 	public ResponseEntity<RsEvent> getRsEvent(@PathVariable int id) {

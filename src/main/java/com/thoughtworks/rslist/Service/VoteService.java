@@ -4,7 +4,6 @@ import com.thoughtworks.rslist.Entity.VoteEntity;
 import com.thoughtworks.rslist.dto.VoteRecord;
 import org.springframework.stereotype.Service;
 
-@Service
 public class VoteService {
 
 	public VoteRecord convertEntityToVote(VoteEntity voteEntity) {

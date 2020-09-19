@@ -1,12 +1,16 @@
 package com.thoughtworks.rslist.api;
 
+import com.thoughtworks.rslist.DataSource.DataSourceConfig;
 import com.thoughtworks.rslist.Entity.UserEntity;
 import com.thoughtworks.rslist.Repository.RsEventRepository;
 import com.thoughtworks.rslist.Repository.UserRepository;
+import com.thoughtworks.rslist.Repository.VoteRepository;
+import com.thoughtworks.rslist.Service.RsEventService;
 import com.thoughtworks.rslist.Service.UserService;
 import com.thoughtworks.rslist.dto.User;
 import com.thoughtworks.rslist.exceptions.MyException;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -22,14 +26,20 @@ import java.util.Optional;
 @RestController
 public class UserController {
 
-	@Autowired
-	UserService userService;
+	private final UserRepository userRepository;
+	private final RsEventRepository rsEventRepository;
+	private final VoteRepository voteRepository;
+	ApplicationContext context = new AnnotationConfigApplicationContext(DataSourceConfig.class);
+	RsEventService rsEventService = context.getBean(RsEventService.class);
+	UserService userService = context.getBean(UserService.class);
 
-	@Autowired
-	UserRepository userRepository;
-
-	@Autowired
-	RsEventRepository rsEventRepository;
+	public UserController(UserRepository userRepository,
+	                      RsEventRepository rsEventRepository,
+	                      VoteRepository voteRepository) {
+		this.userRepository = userRepository;
+		this.rsEventRepository = rsEventRepository;
+		this.voteRepository = voteRepository;
+	}
 
 	@GetMapping("/users")
 	public ResponseEntity<List<User>> getAllUsers() {
