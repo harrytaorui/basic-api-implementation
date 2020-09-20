@@ -44,9 +44,9 @@ public class RsController {
 	@Autowired
 	VoteRepository voteRepository;
 
-	@GetMapping("/rs/{id}")
-	public ResponseEntity<RsEvent> getRsEvent(@PathVariable int id) {
-		Optional<RsEventEntity> result = rsEventRepository.findById(id);
+	@GetMapping("/rs/{rsEventId}")
+	public ResponseEntity<RsEvent> getRsEvent(@PathVariable int rsEventId) {
+		Optional<RsEventEntity> result = rsEventRepository.findById(rsEventId);
 		if (!result.isPresent()) {
 			throw new MyException("invalid index");
 		}
@@ -55,7 +55,7 @@ public class RsController {
 		return ResponseEntity.ok().body(rsEvent);
 	}
 
-	@GetMapping("/rs/list")
+	@GetMapping("/rs")
 	public ResponseEntity<List<RsEvent>> getRsEventByRange(
 			@RequestParam(required = false) Integer start,
 			@RequestParam(required = false) Integer end) {
@@ -72,7 +72,7 @@ public class RsController {
 	}
 
 	@Transactional
-	@PostMapping("/rs/event")
+	@PostMapping("/rs")
 	public ResponseEntity addRsEvent(@Valid @RequestBody RsEvent rsEvent,
 	                                 BindingResult bindingResult)
 			throws JsonProcessingException {
@@ -87,23 +87,6 @@ public class RsController {
 		return ResponseEntity.status(201)
 				.header("index", String.valueOf(rsEventEntity.getId())).build();
 	}
-
-//  @PutMapping("/rs/event/{id}")
-//  public ResponseEntity modifyEvent(@PathVariable int id, @RequestBody RsEvent requestEvent) {
-//
-//    int index = id - 1;
-//    if (!isInList(index)) {
-//      throw new IndexOutOfBoundsException();
-//    }
-//    RsEvent rsEvent = .get(index);
-//    if (requestEvent.getEventName() != null) {
-//      rsEvent.setEventName(requestEvent.getEventName());
-//    }
-//    if (requestEvent.getKeyword() != null) {
-//      rsEvent.setKeyword(requestEvent.getKeyword());
-//    }
-//    return ResponseEntity.ok().build();
-//  }
 
 	@Transactional
 	@PatchMapping("/rs/{rsEventId}")
@@ -133,16 +116,18 @@ public class RsController {
 	}
 
 	@Transactional
-	@DeleteMapping("/rs/event")
-	public ResponseEntity deleteEvent(@RequestParam int id) {
-		if (isInList(id)) {
-			rsEventRepository.deleteById(id);
+	@DeleteMapping("/rs/{rsEventId}")
+	public ResponseEntity deleteEvent(@PathVariable int rsEventId) {
+		Optional<RsEventEntity> result = rsEventRepository.findById(rsEventId);
+		if (!result.isPresent()) {
+			throw new MyException("event id not exist");
 		}
+		rsEventRepository.deleteById(rsEventId);
 		return ResponseEntity.ok().build();
 	}
 
 	@Transactional
-	@PostMapping("/rs/vote/{rsEventId}")
+	@PostMapping("/rs/{rsEventId}/vote")
 	public ResponseEntity voteEvent(@PathVariable int rsEventId,
 	                                @RequestBody VoteRecord record) {
 		Optional<RsEventEntity> eventResult = rsEventRepository.findById(rsEventId);

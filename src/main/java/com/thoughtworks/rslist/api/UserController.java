@@ -36,9 +36,9 @@ public class UserController {
 		return ResponseEntity.ok().body(new ArrayList<>(userService.getUserList()));
 	}
 
-	@GetMapping("/users/{id}")
-	public ResponseEntity<User> getUser(@PathVariable int id) {
-		Optional<UserEntity> result = userRepository.findById(id);
+	@GetMapping("/users/{userId}")
+	public ResponseEntity<User> getUser(@PathVariable int userId) {
+		Optional<UserEntity> result = userRepository.findById(userId);
 		if (!result.isPresent()) {
 			return ResponseEntity.badRequest().build();
 		}
@@ -46,7 +46,7 @@ public class UserController {
 		return ResponseEntity.ok().body(userService.convertEntityToUser(userEntity));
 	}
 
-	@PostMapping("/user/register")
+	@PostMapping("/users")
 	public ResponseEntity register(@Valid @RequestBody User user, BindingResult bindingResult) {
 		if (bindingResult.getFieldErrors().size() > 0) {
 			throw new MyException("invalid user");
@@ -59,13 +59,13 @@ public class UserController {
 
 	@Transactional
 	@ResponseStatus(code = HttpStatus.NO_CONTENT)
-	@DeleteMapping("/user/delete{id}")
-	public void deleteUser(@PathVariable int id) {
-		Optional<UserEntity> userEntity = userRepository.findById(id);
+	@DeleteMapping("/users/{userId}")
+	public void deleteUser(@PathVariable int userId) {
+		Optional<UserEntity> userEntity = userRepository.findById(userId);
 		if (!userEntity.isPresent()) {
 			throw new MyException("user not exist");
 		}
-		userRepository.deleteById(id);
+		userRepository.deleteById(userId);
 	}
 
 }

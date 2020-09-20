@@ -108,7 +108,7 @@ public class RsControllerTest {
 
 	@Test
 	void should_get_rs_event_by_range() throws Exception {
-		mockMvc.perform(get("/rs/list?start=1&end=2"))
+		mockMvc.perform(get("/rs?start=1&end=2"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(2)))
 				.andExpect(jsonPath("$[0].eventName", is("下雨了")))
@@ -126,7 +126,7 @@ public class RsControllerTest {
 
 		RsEvent rsEvent = new RsEvent("第四条事件", "4", createUser(), 2, 1, 4);
 		String json = rsEvent.toJsonWithUser();
-		mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
+		mockMvc.perform(post("/rs").content(json).contentType(MediaType.APPLICATION_JSON)).
 				andExpect(status().isCreated());
 		mockMvc.perform(get("/rs/4"))
 				.andExpect(status().isOk())
@@ -140,7 +140,7 @@ public class RsControllerTest {
 	void add_event_user_can_not_be_null() throws Exception {
 		RsEvent rsEvent = new RsEvent("第四条事件", "4", null, 2, 1, 4);
 		String json = rsEvent.toJsonWithUser();
-		mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
+		mockMvc.perform(post("/rs").content(json).contentType(MediaType.APPLICATION_JSON)).
 				andExpect(status().isBadRequest());
 	}
 
@@ -148,7 +148,7 @@ public class RsControllerTest {
 	void add_event_EventName_can_not_be_null() throws Exception {
 		RsEvent rsEvent = new RsEvent(null, "4", createUser(), 2, 1, 4);
 		String json = rsEvent.toJsonWithUser();
-		mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
+		mockMvc.perform(post("/rs").content(json).contentType(MediaType.APPLICATION_JSON)).
 				andExpect(status().isBadRequest());
 	}
 
@@ -156,163 +156,44 @@ public class RsControllerTest {
 	void add_event_keyword_can_not_be_null() throws Exception {
 		RsEvent rsEvent = new RsEvent("第四条事件", null, createUser(), 2, 1, 4);
 		String json = rsEvent.toJsonWithUser();
-		mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
+		mockMvc.perform(post("/rs").content(json).contentType(MediaType.APPLICATION_JSON)).
 				andExpect(status().isBadRequest());
 	}
 
-//	@Test
-//	void add_event_with_existed_User() throws Exception {
-//		User defaultUser = new User("tao", 19, "male", "1234567@qq.com", "12211333333");
-//		userService.addUser(defaultUser);
-//		RsEvent rsEvent = new RsEvent("第四条事件", "4", 1);
-//		String json = getJsonString(rsEvent);
-//		mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
-//				andExpect(status().isCreated());
-//		assertEquals(userService.getUserList().size(),1);
-//	}
-//
-//	@Test
-//	void add_event_with_New_User() throws Exception {
-//		User defaultUser = new User("tao", 19, "male", "1234567@qq.com", "12211333333");
-//		userService.addUser(defaultUser);
-//		RsEvent rsEvent = new RsEvent("第四条事件", "4", 1);
-//		String json = getJsonString(rsEvent);
-//		mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON)).
-//				andExpect(status().isCreated());
-//		assertEquals(userService.getUserList().size(),2);
-//		Assertions.assertTrue(userService.getUserList()
-//				.stream().anyMatch(e->e.getUserName().equals("小王")));
-//	}
-//
-//	@Test
-//	void should_modify_Rs_Event_No_Keyword() throws Exception {
-//		RsEvent rsEvent = new RsEvent("汪峰上热搜了", null, 1);
-//		String json = getJsonString(rsEvent);
-//		mockMvc.perform(put("/rs/event/1").content(json).contentType(MediaType.APPLICATION_JSON)).
-//				andExpect(status().isOk());
-//		mockMvc.perform(get("/rs/1")).
-//				andExpect(status().isOk()).
-//				andExpect(jsonPath("$.eventName", is("汪峰上热搜了"))).
-//				andExpect(jsonPath("$.keyword", is("1")));
-//	}
-//
-//
-//	@Test
-//	void should_modify_Rs_Event_No_Name() throws Exception {
-//		RsEvent rsEvent = new RsEvent(null, "2", 1);
-//		String json = getJsonString(rsEvent);
-//		mockMvc.perform(put("/rs/event/1").content(json).contentType(MediaType.APPLICATION_JSON)).
-//				andExpect(status().isOk());
-//		mockMvc.perform(get("/rs/1")).
-//				andExpect(status().isOk()).
-//				andExpect(jsonPath("$.eventName", is("第一条事件"))).
-//				andExpect(jsonPath("$.keyword", is("2")));
-//	}
-//
-//	@Test
-//	void should_modify_Rs_Event_With_Both_Param() throws Exception {
-//		RsEvent rsEvent = new RsEvent("汪峰上热搜了", null, 1);
-//		String json = getJsonString(rsEvent);
-//		mockMvc.perform(put("/rs/event/1").content(json).contentType(MediaType.APPLICATION_JSON)).
-//				andExpect(status().isOk());
-//		mockMvc.perform(get("/rs/1")).
-//				andExpect(status().isOk()).
-//				andExpect(jsonPath("$.eventName", is("汪峰上热搜了"))).
-//				andExpect(jsonPath("$.keyword", is("1")));
-//	}
-//
-//	@Test
-//	void should_delete_Rs_Event() throws Exception {
-//		mockMvc.perform(delete("/rs/event?id=1")).
-//				andExpect(status().isOk());
-//		mockMvc.perform(get("/rs/1"))
-//				.andExpect(status().isOk())
-//				.andExpect(jsonPath("$.eventName", not("第一条事件")))
-//				.andExpect(jsonPath("$.keyword", not("1")));
-//	}
-//
-//	@Test
-//	void should_return_index_when_add_event() throws Exception {
-//		RsEvent rsEvent = new RsEvent("第四条事件", "4", 1);
-//		String json = rsEvent.toJsonWithUser();
-//		mockMvc.perform(post("/rs/event").content(json)
-//				.contentType(MediaType.APPLICATION_JSON))
-//				.andExpect(status().isCreated())
-//				.andExpect(header().string("index", "3"));
-//	}
-//
-//	@Test
-//	void should_ignore_user_when_get_event() throws Exception {
-//		mockMvc.perform(get("/rs/1")).andExpect(jsonPath("$", not(hasKey("user"))));
-//	}
-//
-//
-//	@Test
-//	void should_return_invalid_request_param_when_start_end_invalid() throws Exception {
-//		mockMvc.perform(get("/rs/list?start=-1")).andExpect(status().isBadRequest())
-//				.andExpect(jsonPath("$.error", is("invalid request param")));
-//
-//	}
-//
-//	@Test
-//	void should_return_invalid_index_when_index_invalid() throws Exception {
-//		mockMvc.perform(get("/rs/-1")).andExpect(status().isBadRequest())
-//				.andExpect(jsonPath("$.error", is("invalid index")));
-//	}
-//
-//	@Test
-//	void should_return_invalid_param_when_param_invalid() throws Exception {
-//		RsEvent rsEvent = new RsEvent("第四条事件", null, 1);
-//		String json = rsEvent.toJsonWithUser();
-//		mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
-//				.andExpect(status().isBadRequest())
-//				.andExpect(jsonPath("$.error", is("invalid param")));
-//	}
-//
-//	@Test
-//	void should_add_event_when_user_exist() throws Exception {
-//		UserEntity user = UserEntity.builder()
-//				.userName("user1")
-//				.age(19)
-//				.gender("male")
-//				.email("1234567@qq.com")
-//				.phone("12211333333")
-//				.build();
-//		userRepository.save(user);
-//		RsEvent rsEvent = new RsEvent("第四条事件", "2", 1);
-//		String json = getJsonString(rsEvent);
-//		mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
-//				.andExpect(status().isBadRequest())
-//				.andExpect(jsonPath("$.error", is("invalid param")));
-//		List<RsEventEntity> rsEvents = rsEventRepository.findAll();
-//		assertEquals(rsEvents.size(),1);
-//
-//	}
-
+	@Test
+	void should_delete_Rs_Event() throws Exception {
+		mockMvc.perform(delete("/rs/2")).
+				andExpect(status().isOk());
+		assertEquals(rsEventRepository.findAll().size(),1);
+	}
 
 	@Test
 	void should_add_rsEvent_when_user_exist() throws Exception {
 		RsEvent rsEvent = RsEvent.builder().eventName("花木兰电影上映").keyword("2")
-				.userId(1).build();
+				.userId(1)
+				.user(User.builder().build())
+				.build();
 		String jsonString = rsEvent.toJsonWithUser();
-		mockMvc.perform(post("/rs/event").content(jsonString)
+		mockMvc.perform(post("/rs").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 		List<RsEventEntity> rsEventEntityList = rsEventRepository.findAll();
-		assertEquals(rsEventEntityList.size(), 2);
-		assertEquals(rsEventEntityList.get(1).getEventName(), "花木兰电影上映");
+		assertEquals(rsEventEntityList.size(), 3);
+		assertEquals(rsEventEntityList.get(2).getEventName(), "花木兰电影上映");
 	}
 
 	@Test
 	void should_fail_add_rsEvent_when_user_not_exist() throws Exception {
 		RsEvent rsEvent = RsEvent.builder().eventName("花木兰电影上映").keyword("2")
-				.userId(2).build();
+				.userId(2)
+				.user(User.builder().build())
+				.build();
 		String jsonString = rsEvent.toJsonWithUser();
-		mockMvc.perform(post("/rs/event").content(jsonString)
+		mockMvc.perform(post("/rs").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest());
 		List<RsEventEntity> rsEventEntityList = rsEventRepository.findAll();
-		assertEquals(rsEventEntityList.size(), 1);
+		assertEquals(rsEventEntityList.size(), 2);
 	}
 
 
@@ -372,7 +253,7 @@ public class RsControllerTest {
 	void should_vote_when_remain_votes_greater_than_voteNum() throws Exception {
 		VoteRecord record = new VoteRecord(5, 1,LocalDateTime.now());
 		String jsonString = objectMapper.writeValueAsString(record);
-		mockMvc.perform(post("/rs/vote/2").content(jsonString)
+		mockMvc.perform(post("/rs/2/vote").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 		VoteEntity voteEntity = voteRepository.findAll().get(0);
@@ -386,7 +267,7 @@ public class RsControllerTest {
 	void should_fail_vote_when_remain_votes_less_than_voteNum() throws Exception {
 		VoteRecord record = new VoteRecord(11, 1, LocalDateTime.now());
 		String jsonString = objectMapper.writeValueAsString(record);
-		mockMvc.perform(post("/rs/vote/2").content(jsonString)
+		mockMvc.perform(post("/rs/2/vote").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest());
 	}

@@ -85,11 +85,11 @@ public class UserControllerTest {
 	@Test
 	void should_Register_User() throws Exception {
 		String jsonString = getJsonString(new User("harry", 19, "male", "1234567@qq.com", "12211333333"));
-		mockMvc.perform(post("/user/register").content(jsonString)
+		mockMvc.perform(post("/users").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 		List<UserEntity> users = userRepository.findAll();
-		assertEquals(2, users.size());
+		assertEquals(3, users.size());
 		assertEquals("harry", users.get(1).getUserName());
 	}
 
@@ -97,7 +97,7 @@ public class UserControllerTest {
 	@Test
 	void should_Fail_when_Username_is_Empty() throws Exception {
 		String jsonString = getJsonString(new User("", 19, "male", "1234567@qq.com", "12211333333"));
-		mockMvc.perform(post("/user/register").content(jsonString)
+		mockMvc.perform(post("/users").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest());
 	}
@@ -105,7 +105,7 @@ public class UserControllerTest {
 	@Test
 	void should_Fail_when_Username_is_Longer_than_8_Chars() throws Exception {
 		String jsonString = getJsonString(new User("harrytaorui", 19, "male", "1234567@qq.com", "12211333333"));
-		mockMvc.perform(post("/user/register").content(jsonString)
+		mockMvc.perform(post("/users").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest());
 	}
@@ -113,7 +113,7 @@ public class UserControllerTest {
 	@Test
 	void should_Fail_when_Gender_is_Empty() throws Exception {
 		String jsonString = getJsonString(new User("harry", 19, "", "1234567@qq.com", "12211333333"));
-		mockMvc.perform(post("/user/register").content(jsonString)
+		mockMvc.perform(post("/users").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest());
 	}
@@ -121,7 +121,7 @@ public class UserControllerTest {
 	@Test
 	void should_Fail_when_Age_is_Empty() throws Exception {
 		String jsonString = getJsonString(new User("harry", null, "male", "1234567@qq.com", "12211333333"));
-		mockMvc.perform(post("/user/register").content(jsonString)
+		mockMvc.perform(post("/users").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest());
 	}
@@ -129,7 +129,7 @@ public class UserControllerTest {
 	@Test
 	void should_Fail_when_Age_is_Lower_than_18() throws Exception {
 		String jsonString = getJsonString(new User("harry", 11, "male", "1234567@qq.com", "12211333333"));
-		mockMvc.perform(post("/user/register").content(jsonString)
+		mockMvc.perform(post("/users").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest());
 	}
@@ -137,7 +137,7 @@ public class UserControllerTest {
 	@Test
 	void should_Fail_when_Age_is_higher_than_100() throws Exception {
 		String jsonString = getJsonString(new User("harry", 110, "male", "1234567@qq.com", "12211333333"));
-		mockMvc.perform(post("/user/register").content(jsonString)
+		mockMvc.perform(post("/users").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest());
 	}
@@ -145,7 +145,7 @@ public class UserControllerTest {
 	@Test
 	void should_Fail_when_Email_is_in_Wrong_Format() throws Exception {
 		String jsonString = getJsonString(new User("harry", 18, "male", "123456", "12211333333"));
-		mockMvc.perform(post("/user/register").content(jsonString)
+		mockMvc.perform(post("/users").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest());
 	}
@@ -153,7 +153,7 @@ public class UserControllerTest {
 	@Test
 	void should_Fail_when_Phone_number_is_Empty() throws Exception {
 		String jsonString = getJsonString(new User("harry", 18, "male", "1234567@qq.com", ""));
-		mockMvc.perform(post("/user/register").content(jsonString)
+		mockMvc.perform(post("/users").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest());
 	}
@@ -161,7 +161,7 @@ public class UserControllerTest {
 	@Test
 	void should_Fail_when_Phone_number_has_wrong_digits() throws Exception {
 		String jsonString = getJsonString(new User("harry", 18, "male", "1234567@qq.com", "1221133333"));
-		mockMvc.perform(post("/user/register").content(jsonString)
+		mockMvc.perform(post("/users").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest());
 	}
@@ -169,7 +169,7 @@ public class UserControllerTest {
 	@Test
 	void should_Fail_when_Phone_number_not_Starts_with_1() throws Exception {
 		String jsonString = getJsonString(new User("harry", 18, "male", "1234567@qq.com", "22211133333"));
-		mockMvc.perform(post("/user/register").content(jsonString)
+		mockMvc.perform(post("/users").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest());
 	}
@@ -177,16 +177,16 @@ public class UserControllerTest {
 	@Test
 	void should_return_index_when_create_user() throws Exception {
 		String jsonString = getJsonString(new User("harry", 19, "male", "1234567@qq.com", "12211333333"));
-		mockMvc.perform(post("/user/register").content(jsonString)
+		mockMvc.perform(post("/users").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated())
-				.andExpect(header().string("index", "0"));
+				.andExpect(header().string("index", "6"));
 	}
 
 	@Test
 	void should_return_invalid_user_when_user_invalid() throws Exception {
 		String jsonString = getJsonString(new User("harry", 11, "male", "1234567@qq.com", "12211333333"));
-		mockMvc.perform(post("/user/register").content(jsonString)
+		mockMvc.perform(post("/users").content(jsonString)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.error", is("invalid user")));
@@ -222,14 +222,14 @@ public class UserControllerTest {
 
 	@Test
 	void should_delete_user_by_id() throws Exception {
-		mockMvc.perform(delete("/user/delete1")).andExpect(status().isNoContent());
+		mockMvc.perform(delete("/users/1")).andExpect(status().isNoContent());
 		List<UserEntity> users = userRepository.findAll();
 		assertEquals(users.size(), 1);
 	}
 
 	@Test
 	void should_delete_user_and_event() throws Exception {
-		mockMvc.perform(delete("/user/delete1")).andExpect(status().isNoContent());
+		mockMvc.perform(delete("/users/1")).andExpect(status().isNoContent());
 		List<UserEntity> users = userRepository.findAll();
 		List<RsEventEntity> events = rsEventRepository.findAll();
 		assertEquals(events.size(), 1);
