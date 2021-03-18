@@ -1,25 +1,16 @@
 pipeline {
     agent any
-
     stages {
         stage('build') {
-            steps {
-                echo 'build'
-            //sh './gradlew build -x test'
-            }
-        }
-        stage('test') {
-
-            //sh './gradlew check'
-            
-            steps {
-                    sh 'docker build -t harrytaorui/basic-app:1.0.0 .'
-                    sh 'docker images'
+            agent {
+                docker {
+                    image 'openjdk:11'
+                    args '-v"$PWD":/app'
+                    reuseNode true
                 }
-        }
-        stage('staging') {
+            }
             steps {
-                echo 'stage staging'
+                sh './gradlew clean build'
             }
         }
     }
