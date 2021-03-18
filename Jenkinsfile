@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-        docker {image 'mysql:latest'}
-    }
+    agent none
 
     stages {
         stage('build') {
@@ -11,16 +9,12 @@ pipeline {
             }
         }
         stage('test') {
-            agent {
-                docker {
-                    image 'mysql:latest'
-                    args '-e "MYSQL_ROOT_PASSWORD=root" -p 3306:3306'
-                }
 
             //sh './gradlew check'
             }
             steps {
-                    sh 'mysql -v'
+                    sh 'docker build -t harrytaorui/basic-app:1.0.0 .'
+                    sh 'docker images'
                 }
         }
         stage('staging') {
