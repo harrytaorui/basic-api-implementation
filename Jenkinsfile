@@ -11,7 +11,7 @@ pipeline {
         stage('test') {
 
             //sh './gradlew check'
-            }
+            
             steps {
                     sh 'docker build -t harrytaorui/basic-app:1.0.0 .'
                     sh 'docker images'
