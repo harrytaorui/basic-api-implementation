@@ -1,5 +1,7 @@
 pipeline {
-    agent none
+    agent {
+        docker {image 'mysql:latest'}
+    }
 
     stages {
         stage('build') {
